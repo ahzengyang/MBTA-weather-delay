@@ -5,11 +5,11 @@ Add a brief description of your project, in a sentence or two.
 
 | Name | GitHubID | Role / Focus |
 | --- | --- | --- |
-| Angela Wei | id | MBTA station website scrape |
-| Alex Zeng-Yang | id | Delays API |
-| Aditya Verma | id | Number of passengers API |
-| Daniel Patel | id | Delays API|
-| Alex Casella | id | Weather API|
+| Angela Wei | id | MBTA station website scrape (source 4) |
+| Alex Zeng-Yang | id | Delays API (source 1) |
+| Aditya Verma | id | Number of passengers API (source 3) |
+| Daniel Patel | id | Delays API (source 1)|
+| Alex Casella | id | Weather API (source 2)|
 ---
 
 ## Problem Statement
