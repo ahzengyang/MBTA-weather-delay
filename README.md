@@ -13,7 +13,7 @@ Add a brief description of your project, in a sentence or two.
 ---
 
 ## Problem Statement
-- Follow the direction given in the 1st assignment
+- We ask the question of whether MBTA trains arrive later during rainy and high-wind conditions, and whether this pattern is only seen at the 34 stations where the track and platform are above ground rather than the 16 underground stations. We will combine the following datasets to answer this question: 1) 511 SF Bay real-time scheduled and predicted arrival times, 2) Open-Mateo weather data, 3) MBTA daily station exits to determine the number of passengers affected by delays, 4) Wikipedia Massachusetts Bay Transit Stations to determine whether the station is underground or exposed to the elements. We will create a dashboard mapping all 50 MBTA stations, sized by rider-minutes delay, with a precipitation vs delay scatter plot that can be toggled between underground and exposed stations, with the ability to filter by line, county, hour of day, and date range. This could be useful to the MBTA operations group who decide how, where, and when to place buffer into the train schedule.
 
 
 ---
