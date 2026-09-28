@@ -24,9 +24,10 @@ Add a brief description of your project, in a sentence or two.
 ### Sources
 | # | Source & Link | Method | What it contains | Update frequency | Access requirements |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [NAME](https://exact-url) | API | rows, columns, time range, geography — in your own words | daily / monthly / static | free key, 100 req/day |
-| 2 | [NAME](https://exact-url) | File | ... | ... | none |
-| 3 | [NAME](https://exact-url) | Scraped | ... | ... | `robots.txt` checked DATE |
+| 1 | [MBTA Delays]([https://exact-url](https://performancedata.mbta.com/lamp/subway-on-time-performance-v1)) | API | rows, columns, time range, geography — in your own words | daily / monthly / static | free key, 100 req/day |
+| 2 | [Weather]((https://archive-api.open-meteo.com/v1/archive)) | File | ... | ... | none |
+| 3 | [Subway Ridership]((https://gis.data.mass.gov/datasets/MassDOT::mbta-gated-station-entries)) | Scraped | ... | ... | `robots.txt` checked DATE |
+| 4 | [Subway Stations]() | Scraped | ... | ... | `robots.txt` checked DATE |
 
 Note: If we need a key, say which environment variable holds it and make sure that variable also appears in the .env_template
 
