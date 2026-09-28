@@ -5,11 +5,11 @@ Add a brief description of your project, in a sentence or two.
 
 | Name | GitHubID | Role / Focus |
 | --- | --- | --- |
-| FULL NAME | id | e.g. Streamlit app - map |
-| FULL NAME | id | e.g. scraping for SF news data  + scheduled collection |
-| FULL NAME | id | e.g. API call for SF crimedata + data cleaning |
-| FULL NAME | id | e.g. Streamlit app - interactive bargraph|
-| FULL NAME | id | e.g. API call weather data +  scheduled collection|
+| Angela Wei | id | MBTA station website scrape |
+| Alex Zeng-Yang | id | Delays API |
+| Aditya Verma | id | Number of passengers API |
+| Daniel Patel | id | Delays API|
+| Alex Casella | id | Weather API|
 ---
 
 ## Problem Statement
