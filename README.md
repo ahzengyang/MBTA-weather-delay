@@ -25,7 +25,7 @@ Add a brief description of your project, in a sentence or two.
 | # | Source & Link | Method | What it contains | Update frequency | Access requirements |
 | --- | --- | --- | --- | --- | --- |
 | 1 | [MBTA Delays]([https://exact-url](https://performancedata.mbta.com/lamp/subway-on-time-performance-v1)) | API | rows, columns, time range, geography — in your own words | daily / monthly / static | free key, 100 req/day |
-| 2 | [Weather]((https://archive-api.open-meteo.com/v1/archive)) | API | ... | ... | none |
+| 2 | [Weather]((https://archive-api.open-meteo.com/v1/archive)) | API | Hourly weather for each MBTA station above ground based on longitude and latitude. Includes measures of temperature, rain, precipitation, snow, wind speed, wind gusts, WMO weather code, and cloud coverage. | Hourly | none |
 | 3 | [Subway Ridership]((https://gis.data.mass.gov/datasets/MassDOT::mbta-gated-station-entries)) | Scraped | ... | ... | `robots.txt` checked DATE |
 | 4 | [Subway Stations]() | Scraped | ... | ... | `robots.txt` checked DATE |
 
