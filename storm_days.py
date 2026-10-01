@@ -32,7 +32,7 @@ df.loc[(df.snow_cm > 1) & (df.peak_gust_kmh > 70), "type"] = "snow+wind"
 top = df.sort_values("severity", ascending=False).head(25)
 top.to_csv("storm_days.csv", index=False)
 
-print("TOP 25 WEATHER EVENTS, 2024-01-01 .. 2026-09-29")
+print(f"TOP 25 WEATHER EVENTS, {df.day.min()} .. {df.day.max()}")
 print("These are the days where a weather->delay effect should be visible.\n")
 print(top[["day","type","snow_cm","rain_hrs","peak_gust_kmh","min_vis_km","severity"]]
       .to_string(index=False))
