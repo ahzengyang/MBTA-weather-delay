@@ -1,10 +1,10 @@
 """
 Python script to download MBTA GTFS feed, extract only subway
-station file, and upload to GCS. 
+station file, and upload to GCS as raw csv. 
 
 Run directly:
 
-    python scrape_stations.py
+    python station_data.py
 
 Config info (URLs, bucket name) comes from user_definition.py.
 """
@@ -22,7 +22,7 @@ from user_definition import(
     bucket_name,
     service_account_file_path,
     station_data_file_name
-) 
+)
 
 def get_raw_stations_csv(url: str):
     resp = requests.get(url, timeout=30)
@@ -30,6 +30,7 @@ def get_raw_stations_csv(url: str):
     with zipfile.ZipFile(io.BytesIO(resp.content)) as z, z.open("stops.txt") as f:
         df = pd.read_csv(f, dtype=str, na_filter=False)
     return df.to_csv(index=False).encode("utf-8")
+
 
 def upload_to_gcs(data: bytes, bucket_name: str, blob_path: str):
     try:
@@ -46,5 +47,4 @@ def upload_to_gcs(data: bytes, bucket_name: str, blob_path: str):
 
 if __name__ == "__main__":
     csv_bytes = get_raw_stations_csv(mbta_gtfs_url)
-    upload_to_gcs(csv_bytes, bucket_name, station_data_file_name)
-    
+    upload_to_gcs(csv_bytes, bucket_name, f"station_raw/{station_data_file_name}")
