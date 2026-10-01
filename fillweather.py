@@ -50,7 +50,7 @@ def _already_done(expected_rows: int) -> set[str]:
 
 def main() -> int:
     p = argparse.ArgumentParser(description="Back-fill MBTA station weather since 2024.")
-    p.add_argument("--start", default="2024-01-01")
+    p.add_argument("--start", default="2025-06-01")
     p.add_argument("--end", default=(date.today() - timedelta(days=1)).isoformat())
     p.add_argument("--stations-csv", default=STATIONS_CSV)
     p.add_argument("--limit", type=int, help="only process the first N stations (testing)")
