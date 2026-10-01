@@ -1,16 +1,19 @@
-"""Back-fill hourly weather for every MBTA heavy-rail station since 2024.
+"""Fill hourly weather for every MBTA subway station since June 1st, 2025.
+
+Covers the whole subway as the MBTA defines it -- Red, Orange, Blue, the four
+Green Line branches and Mattapan -- which is 125 parent stations.
 
 Uses the historical-forecast endpoint (~2 km grid + visibility), which covers
 2022 -> today, so the whole 2024+ window fits.
 
 One request per station covers the entire range -- 24,048 hourly rows -- so
-this is ~52 requests total, well inside Open-Meteo's free limit.
+this is ~125 requests total, well inside Open-Meteo's free limit.
 
 Resumable: stations already complete in the database are skipped, so an
 interrupted run can simply be restarted.
 
-    python backfill.py                       # 2024-01-01 -> yesterday
-    python backfill.py --start 2024-06-01    # custom window
+    python backfillweather.py                       # 2024-01-01 -> yesterday
+    python backfillweather.py --start 2024-06-01    # custom window
 """
 from __future__ import annotations
 
@@ -24,7 +27,9 @@ from weather_openmeteo import (
     DB_PATH, PROCESSED_DIR, WeatherFetchError, fetch_weather, log, save_processed,
 )
 
-STATIONS_CSV = "stations_heavy_rail.csv"
+# All 125 subway parent stations. `stations_heavy_rail.csv` still holds the 52
+# Red/Orange/Blue subset if the scope is ever narrowed again.
+STATIONS_CSV = "stations.csv"
 
 
 def _already_done(expected_rows: int) -> set[str]:
@@ -90,8 +95,8 @@ def main() -> int:
         log.error("failed: %s", failed)
         log.error("re-run this script; completed stations are skipped automatically")
 
-    # One Parquet export at the end. A 1.25M-row CSV is ~150 MB; Parquet is
-    # a fraction of that and preserves dtypes.
+    # One Parquet export at the end. A 3M-row CSV is ~360 MB; Parquet is a
+    # fraction of that and preserves dtypes.
     conn = sqlite3.connect(DB_PATH)
     try:
         out = pd.read_sql("SELECT * FROM weather_hourly", conn)
