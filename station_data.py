@@ -18,7 +18,7 @@ from google.oauth2 import service_account
 
 
 from user_definition import(
-    MBTA_GTFS_URL,
+    mbta_gtfs_urlL,
     project_id,
     bucket_name,
     service_account_file_path,
@@ -58,6 +58,6 @@ def upload_to_gcs(data: bytes, bucket_name: str, blob_path: str):
 
 
 if __name__ == "__main__":
-    csv_bytes = get_subway_stations_csv(MBTA_GTFS_URL)
+    csv_bytes = get_subway_stations_csv(mbta_gtfs_urlL)
     upload_to_gcs(csv_bytes, bucket_name, station_data_file_name)
     print(f"Uploaded to gs://{bucket_name}/{station_data_file_name}")
