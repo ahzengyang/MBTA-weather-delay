@@ -43,13 +43,9 @@ API_TIMEZONE = "GMT"
 # Available on both endpoints.
 CORE_VARS = [
     "temperature_2m",
-    "precipitation",
     "rain",
     "snowfall",
-    "wind_speed_10m",
     "wind_gusts_10m",
-    "weather_code",
-    "cloud_cover",
 ]
 # Only on the historical-forecast endpoint.
 FORECAST_ONLY_VARS = ["visibility"]
@@ -190,9 +186,9 @@ def fetch_weather(
     # `precipitation` is rain + snow water equivalent, so keying is_raining on
     # it labels every snowstorm as rain. Use `rain` for rain specifically.
     zeros = pd.Series(0.0, index=df.index)
-    df["is_precipitating"] = df.get("precipitation", zeros).fillna(0) > 0
     df["is_raining"] = df.get("rain", zeros).fillna(0) > 0
     df["is_snowing"] = df.get("snowfall", zeros).fillna(0) > 0
+    df["is_precipitating"] = df["is_raining"] | df["is_snowing"]
 
     _validate(df, hourly, start_date, end_date)
     return df
