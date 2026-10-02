@@ -186,9 +186,12 @@ def fetch_weather(
     # `precipitation` is rain + snow water equivalent, so keying is_raining on
     # it labels every snowstorm as rain. Use `rain` for rain specifically.
     zeros = pd.Series(0.0, index=df.index)
-    df["is_raining"] = df.get("rain", zeros).fillna(0) > 0
+    wet = df.get("rain", zeros).fillna(0) > 0
+    temp = df.get("temperature_2m", zeros).fillna(0)
+    df["is_raining"] = wet & (temp > 0)
+    df["is_freezing_precip"] = wet & (temp <= 0)
     df["is_snowing"] = df.get("snowfall", zeros).fillna(0) > 0
-    df["is_precipitating"] = df["is_raining"] | df["is_snowing"]
+    df["is_precipitating"] = wet | df["is_snowing"]
 
     _validate(df, hourly, start_date, end_date)
     return df
