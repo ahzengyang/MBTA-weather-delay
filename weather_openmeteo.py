@@ -257,7 +257,7 @@ def save_processed(df: pd.DataFrame, db_path: Path = DB_PATH,
     out["ingested_at_utc"] = datetime.now(dt_timezone.utc).isoformat()
     for c in ("observed_at_utc", "observed_at_local"):
         out[c] = out[c].apply(lambda v: v.isoformat() if pd.notna(v) else None)
-    for c in ("is_precipitating", "is_raining", "is_snowing"):
+    for c in("is_precipitating", "is_raining", "is_snowing", "is_freezing_precip"):
         out[c] = out[c].astype(int)
 
     # Columns absent on this endpoint (e.g. visibility on archive) store NULL.
