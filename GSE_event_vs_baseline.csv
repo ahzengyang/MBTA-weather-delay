@@ -1,0 +1,426 @@
+date,day_type,stop_id,station_name,lines,daily_entries,avg_daily_all,baseline_same_day_type,pct_vs_baseline
+2025-02-16,weekend,place-aport,Airport,Blue Line,3229.0,6078.3,4836.4,-33.2
+2025-02-16,weekend,place-alfcl,Alewife,Red Line,1553.0,5780.6,3687.0,-57.9
+2025-02-16,weekend,place-andrw,Andrew,Red Line,1247.0,3255.3,2134.3,-41.6
+2025-02-16,weekend,place-aqucl,Aquarium,Blue Line,1772.0,3333.0,3084.2,-42.5
+2025-02-16,weekend,place-armnl,Arlington,Green Line,2121.0,3907.7,3739.3,-43.3
+2025-02-16,weekend,place-asmnl,Ashmont,Red Line,1157.0,3756.3,2193.5,-47.3
+2025-02-16,weekend,place-astao,Assembly,Orange Line,22.0,2967.9,2588.3,-99.2
+2025-02-16,weekend,place-bbsta,Back Bay,Orange Line,3788.0,10028.9,6270.6,-39.6
+2025-02-16,weekend,place-balsq,Ball Square,Green Line,125.0,139.3,109.9,13.7
+2025-02-16,weekend,place-bmmnl,Beachmont,Blue Line,961.0,2348.0,1560.5,-38.4
+2025-02-16,weekend,place-bomnl,Bowdoin,Blue Line,444.0,1406.3,666.0,-33.3
+2025-02-16,weekend,place-boyls,Boylston,Green Line,2942.0,3859.1,4181.6,-29.6
+2025-02-16,weekend,place-brntn,Braintree,Red Line,519.0,2316.0,1416.0,-63.3
+2025-02-16,weekend,place-brdwy,Broadway,Red Line,1362.0,3513.1,2393.2,-43.1
+2025-02-16,weekend,place-cntsq,Central,Red Line,4172.0,8250.8,6683.3,-37.6
+2025-02-16,weekend,place-chmnl,Charles/MGH,Red Line,2166.0,5543.2,2760.4,-21.5
+2025-02-16,weekend,place-chncl,Chinatown,Orange Line,2037.0,3955.4,3078.5,-33.8
+2025-02-16,weekend,place-ccmnl,Community College,Orange Line,16.0,2457.6,1039.7,-98.5
+2025-02-16,weekend,place-coecl,Copley,Green Line,5920.0,7980.6,7981.3,-25.8
+2025-02-16,weekend,place-crtst,Courthouse,Silver Line,987.0,2253.6,1468.3,-32.8
+2025-02-16,weekend,place-davis,Davis,Red Line,2123.0,4866.6,3789.1,-44.0
+2025-02-16,weekend,place-dwnxg,Downtown Crossing,"Orange Line, Red Line",3814.0,10888.3,7428.3,-48.7
+2025-02-16,weekend,place-esomr,East Somerville,Green Line,54.2,70.5,56.8,-4.6
+2025-02-16,weekend,place-fldcr,Fields Corner,Red Line,894.0,2377.4,1575.7,-43.3
+2025-02-16,weekend,place-forhl,Forest Hills,Orange Line,2364.0,6328.0,3468.6,-31.8
+2025-02-16,weekend,place-gilmn,Gilman Square,Green Line,266.7,264.1,207.2,28.7
+2025-02-16,weekend,place-gover,Government Center,"Blue Line, Green Line",2265.0,4821.1,3947.0,-42.6
+2025-02-16,weekend,place-grnst,Green Street,Orange Line,605.0,1799.9,1101.4,-45.1
+2025-02-16,weekend,place-harsq,Harvard,Red Line,6611.0,10860.0,9604.7,-31.2
+2025-02-16,weekend,place-haecl,Haymarket,"Green Line, Orange Line",2968.0,6453.5,5715.2,-48.1
+2025-02-16,weekend,place-hymnl,Hynes Convention Center,Green Line,3732.0,5288.6,5460.7,-31.7
+2025-02-16,weekend,place-jfk,JFK/UMass,Red Line,1331.0,4084.5,2173.9,-38.8
+2025-02-16,weekend,place-jaksn,Jackson Square,Orange Line,1022.0,2846.1,1631.9,-37.4
+2025-02-16,weekend,place-knncl,Kendall/MIT,Red Line,3451.0,8412.3,4498.5,-23.3
+2025-02-16,weekend,place-kencl,Kenmore,Green Line,2579.0,4439.8,4203.1,-38.6
+2025-02-16,weekend,place-lech,Lechmere,Green Line,229.2,245.6,196.0,16.9
+2025-02-16,weekend,place-mgngl,Magoun Square,Green Line,141.7,128.3,103.5,36.9
+2025-02-16,weekend,place-mlmnl,Malden Center,Orange Line,11.0,5719.4,3525.2,-99.7
+2025-02-16,weekend,place-masta,Massachusetts Avenue,Orange Line,1156.0,3184.2,1996.0,-42.1
+2025-02-16,weekend,place-matt,Mattapan Line,Mattapan Line,758.0,2785.5,1568.2,-51.7
+2025-02-16,weekend,place-mvbcl,Maverick,Blue Line,3464.0,7320.1,5351.5,-35.3
+2025-02-16,weekend,place-mdftf,Medford/Tufts,Green Line,166.7,181.5,127.3,31.0
+2025-02-16,weekend,place-nqncy,North Quincy,Red Line,768.0,2886.8,1634.9,-53.0
+2025-02-16,weekend,place-north,North Station,"Green Line, Orange Line",6609.0,11662.5,8031.2,-17.7
+2025-02-16,weekend,place-ogmnl,Oak Grove,Orange Line,15.0,3496.9,2045.5,-99.3
+2025-02-16,weekend,place-orhte,Orient Heights,Blue Line,1226.0,3047.0,2079.0,-41.0
+2025-02-16,weekend,place-pktrm,Park Street,"Green Line, Red Line",3888.0,8842.8,7973.2,-51.2
+2025-02-16,weekend,place-portr,Porter,Red Line,2502.0,4190.9,3402.5,-26.5
+2025-02-16,weekend,place-prmnl,Prudential,Green Line,2144.0,2182.0,2292.7,-6.5
+2025-02-16,weekend,place-qamnl,Quincy Adams,Red Line,318.0,1560.4,867.2,-63.3
+2025-02-16,weekend,place-qnctr,Quincy Center,Red Line,1005.0,3374.7,2094.1,-52.0
+2025-02-16,weekend,place-rbmnl,Revere Beach,Blue Line,1013.0,2267.8,1633.2,-38.0
+2025-02-16,weekend,place-river,Riverside,Green Line,259.0,899.9,896.9,-71.1
+2025-02-16,weekend,place-rcmnl,Roxbury Crossing,Orange Line,1064.0,2916.6,1712.4,-37.9
+2025-02-16,weekend,place-rugg,Ruggles,Orange Line,1948.0,5463.2,2435.5,-20.0
+2025-02-16,weekend,place-shmnl,Savin Hill,Red Line,504.0,1248.0,824.3,-38.9
+2025-02-16,weekend,place-spmnl,Science Park,Green Line,772.0,733.3,660.0,17.0
+2025-02-16,weekend,place-smmnl,Shawmut,Red Line,400.0,1085.6,630.5,-36.6
+2025-02-16,weekend,place-sstat,South Station,"Red Line, Silver Line",4110.0,11868.8,7126.5,-42.3
+2025-02-16,weekend,place-state,State Street,"Blue Line, Orange Line",1939.0,7246.9,3578.8,-45.8
+2025-02-16,weekend,place-sbmnl,Stony Brook,Orange Line,886.0,1897.8,1257.4,-29.5
+2025-02-16,weekend,place-sdmnl,Suffolk Downs,Blue Line,61.0,501.1,323.9,-81.2
+2025-02-16,weekend,place-sull,Sullivan Square,Orange Line,5.0,3949.4,2538.3,-99.8
+2025-02-16,weekend,place-symcl,Symphony,Green Line,852.0,946.3,1010.2,-15.7
+2025-02-16,weekend,place-tumnl,Tufts Medical Center,Orange Line,1638.0,3777.8,1880.0,-12.9
+2025-02-16,weekend,place-unsqu,Union Square,Green Line,179.2,135.3,111.3,61.0
+2025-02-16,weekend,place-welln,Wellington,Orange Line,10.0,3899.1,2215.9,-99.5
+2025-02-16,weekend,place-wlsta,Wollaston,Red Line,574.0,1734.5,1017.4,-43.6
+2025-02-16,weekend,place-wondl,Wonderland,Blue Line,1791.0,3759.9,2469.0,-27.5
+2025-02-16,weekend,place-wimnl,Wood Island,Blue Line,629.0,1318.7,932.0,-32.5
+2025-02-16,weekend,place-wtcst,World Trade Center,Silver Line,596.0,1200.2,909.0,-34.4
+2025-03-17,weekday,place-aport,Airport,Blue Line,4095.0,6078.3,6569.2,-37.7
+2025-03-17,weekday,place-alfcl,Alewife,Red Line,3814.0,5780.6,6616.4,-42.4
+2025-03-17,weekday,place-andrw,Andrew,Red Line,2240.0,3255.3,3702.9,-39.5
+2025-03-17,weekday,place-aqucl,Aquarium,Blue Line,2471.0,3333.0,3432.4,-28.0
+2025-03-17,weekday,place-armnl,Arlington,Green Line,2746.0,3907.7,3974.4,-30.9
+2025-03-17,weekday,place-asmnl,Ashmont,Red Line,931.0,3756.3,4380.3,-78.7
+2025-03-17,weekday,place-astao,Assembly,Orange Line,2050.0,2967.9,3119.5,-34.3
+2025-03-17,weekday,place-bbsta,Back Bay,Orange Line,9219.0,10028.9,11471.0,-19.6
+2025-03-17,weekday,place-balsq,Ball Square,Green Line,337.5,139.3,150.9,123.7
+2025-03-17,weekday,place-bmmnl,Beachmont,Blue Line,1630.0,2348.0,2653.2,-38.6
+2025-03-17,weekday,place-bomnl,Bowdoin,Blue Line,1586.0,1406.3,1701.8,-6.8
+2025-03-17,weekday,place-boyls,Boylston,Green Line,2023.0,3859.1,3732.2,-45.8
+2025-03-17,weekday,place-brntn,Braintree,Red Line,1869.0,2316.0,2671.8,-30.0
+2025-03-17,weekday,place-brdwy,Broadway,Red Line,1971.0,3513.1,3928.7,-49.8
+2025-03-17,weekday,place-cntsq,Central,Red Line,6537.0,8250.8,8876.6,-26.4
+2025-03-17,weekday,place-chmnl,Charles/MGH,Red Line,4796.0,5543.2,6654.1,-27.9
+2025-03-17,weekday,place-chncl,Chinatown,Orange Line,3437.0,3955.4,4305.4,-20.2
+2025-03-17,weekday,place-ccmnl,Community College,Orange Line,1718.0,2457.6,3023.7,-43.2
+2025-03-17,weekday,place-coecl,Copley,Green Line,6178.0,7980.6,7980.3,-22.6
+2025-03-17,weekday,place-crtst,Courthouse,Silver Line,1740.0,2253.6,2567.2,-32.2
+2025-03-17,weekday,place-davis,Davis,Red Line,2890.0,4866.6,5296.7,-45.4
+2025-03-17,weekday,place-dwnxg,Downtown Crossing,"Orange Line, Red Line",9452.0,10888.3,12269.6,-23.0
+2025-03-17,weekday,place-esomr,East Somerville,Green Line,195.8,70.5,75.8,158.3
+2025-03-17,weekday,place-fldcr,Fields Corner,Red Line,1368.0,2377.4,2697.5,-49.3
+2025-03-17,weekday,place-forhl,Forest Hills,Orange Line,6412.0,6328.0,7469.5,-14.2
+2025-03-17,weekday,place-gilmn,Gilman Square,Green Line,566.7,264.1,286.5,97.8
+2025-03-17,weekday,place-gover,Government Center,"Blue Line, Green Line",5264.0,4821.1,5170.1,1.8
+2025-03-17,weekday,place-grnst,Green Street,Orange Line,1751.0,1799.9,2077.1,-15.7
+2025-03-17,weekday,place-harsq,Harvard,Red Line,8157.0,10860.0,11361.2,-28.2
+2025-03-17,weekday,place-haecl,Haymarket,"Green Line, Orange Line",5541.0,6453.5,6748.3,-17.9
+2025-03-17,weekday,place-hymnl,Hynes Convention Center,Green Line,3384.0,5288.6,5220.1,-35.2
+2025-03-17,weekday,place-jfk,JFK/UMass,Red Line,2881.0,4084.5,4808.4,-40.1
+2025-03-17,weekday,place-jaksn,Jackson Square,Orange Line,2478.0,2846.1,3326.1,-25.5
+2025-03-17,weekday,place-knncl,Kendall/MIT,Red Line,7662.0,8412.3,9925.9,-22.8
+2025-03-17,weekday,place-kencl,Kenmore,Green Line,3797.0,4439.8,4535.1,-16.3
+2025-03-17,weekday,place-lech,Lechmere,Green Line,591.7,245.6,265.3,123.0
+2025-03-17,weekday,place-mgngl,Magoun Square,Green Line,308.4,128.3,138.1,123.3
+2025-03-17,weekday,place-mlmnl,Malden Center,Orange Line,5488.0,5719.4,6595.3,-16.8
+2025-03-17,weekday,place-masta,Massachusetts Avenue,Orange Line,2901.0,3184.2,3658.5,-20.7
+2025-03-17,weekday,place-matt,Mattapan Line,Mattapan Line,121.0,2785.5,3271.4,-96.3
+2025-03-17,weekday,place-mvbcl,Maverick,Blue Line,7655.0,7320.1,8106.1,-5.6
+2025-03-17,weekday,place-mdftf,Medford/Tufts,Green Line,575.0,181.5,203.0,183.3
+2025-03-17,weekday,place-nqncy,North Quincy,Red Line,2182.0,2886.8,3386.6,-35.6
+2025-03-17,weekday,place-north,North Station,"Green Line, Orange Line",13381.0,11662.5,13084.0,2.3
+2025-03-17,weekday,place-ogmnl,Oak Grove,Orange Line,3349.0,3496.9,4070.8,-17.7
+2025-03-17,weekday,place-orhte,Orient Heights,Blue Line,2984.0,3047.0,3426.0,-12.9
+2025-03-17,weekday,place-pktrm,Park Street,"Green Line, Red Line",4769.0,8842.8,9190.0,-48.1
+2025-03-17,weekday,place-portr,Porter,Red Line,3047.0,4190.9,4505.7,-32.4
+2025-03-17,weekday,place-prmnl,Prudential,Green Line,1962.0,2182.0,2137.6,-8.2
+2025-03-17,weekday,place-qamnl,Quincy Adams,Red Line,1079.0,1560.4,1835.5,-41.2
+2025-03-17,weekday,place-qnctr,Quincy Center,Red Line,2744.0,3374.7,3868.8,-29.1
+2025-03-17,weekday,place-rbmnl,Revere Beach,Blue Line,2149.0,2267.8,2518.2,-14.7
+2025-03-17,weekday,place-river,Riverside,Green Line,640.0,899.9,901.1,-29.0
+2025-03-17,weekday,place-rcmnl,Roxbury Crossing,Orange Line,2843.0,2916.6,3388.0,-16.1
+2025-03-17,weekday,place-rugg,Ruggles,Orange Line,6681.0,5463.2,6671.9,0.1
+2025-03-17,weekday,place-shmnl,Savin Hill,Red Line,996.0,1248.0,1417.1,-29.7
+2025-03-17,weekday,place-spmnl,Science Park,Green Line,709.0,733.3,762.6,-7.0
+2025-03-17,weekday,place-smmnl,Shawmut,Red Line,606.0,1085.6,1267.3,-52.2
+2025-03-17,weekday,place-sstat,South Station,"Red Line, Silver Line",5390.0,11868.8,13721.2,-60.7
+2025-03-17,weekday,place-state,State Street,"Blue Line, Orange Line",7590.0,7246.9,8717.0,-12.9
+2025-03-17,weekday,place-sbmnl,Stony Brook,Orange Line,1874.0,1897.8,2150.5,-12.9
+2025-03-17,weekday,place-sdmnl,Suffolk Downs,Blue Line,459.0,501.1,568.7,-19.3
+2025-03-17,weekday,place-sull,Sullivan Square,Orange Line,3915.0,3949.4,4501.9,-13.0
+2025-03-17,weekday,place-symcl,Symphony,Green Line,719.0,946.3,920.8,-21.9
+2025-03-17,weekday,place-tumnl,Tufts Medical Center,Orange Line,3930.0,3777.8,4535.5,-13.4
+2025-03-17,weekday,place-unsqu,Union Square,Green Line,345.9,135.3,144.6,139.2
+2025-03-17,weekday,place-welln,Wellington,Orange Line,3677.0,3899.1,4551.5,-19.2
+2025-03-17,weekday,place-wlsta,Wollaston,Red Line,1675.0,1734.5,2020.8,-17.1
+2025-03-17,weekday,place-wondl,Wonderland,Blue Line,3914.0,3759.9,4264.2,-8.2
+2025-03-17,weekday,place-wimnl,Wood Island,Blue Line,1343.0,1318.7,1467.7,-8.5
+2025-03-17,weekday,place-wtcst,World Trade Center,Silver Line,911.0,1200.2,1316.5,-30.8
+2025-10-13,weekday,place-aport,Airport,Blue Line,3750.0,6078.3,6569.2,-42.9
+2025-10-13,weekday,place-alfcl,Alewife,Red Line,3309.0,5780.6,6616.4,-50.0
+2025-10-13,weekday,place-andrw,Andrew,Red Line,2001.0,3255.3,3702.9,-46.0
+2025-10-13,weekday,place-aqucl,Aquarium,Blue Line,2422.0,3333.0,3432.4,-29.4
+2025-10-13,weekday,place-armnl,Arlington,Green Line,3100.0,3907.7,3974.4,-22.0
+2025-10-13,weekday,place-asmnl,Ashmont,Red Line,2308.0,3756.3,4380.3,-47.3
+2025-10-13,weekday,place-astao,Assembly,Orange Line,1510.0,2967.9,3119.5,-51.6
+2025-10-13,weekday,place-bbsta,Back Bay,Orange Line,38.0,10028.9,11471.0,-99.7
+2025-10-13,weekday,place-balsq,Ball Square,Green Line,79.6,139.3,150.9,-47.2
+2025-10-13,weekday,place-bmmnl,Beachmont,Blue Line,1412.0,2348.0,2653.2,-46.8
+2025-10-13,weekday,place-bomnl,Bowdoin,Blue Line,726.0,1406.3,1701.8,-57.3
+2025-10-13,weekday,place-boyls,Boylston,Green Line,4879.0,3859.1,3732.2,30.7
+2025-10-13,weekday,place-brntn,Braintree,Red Line,1372.0,2316.0,2671.8,-48.6
+2025-10-13,weekday,place-brdwy,Broadway,Red Line,2105.0,3513.1,3928.7,-46.4
+2025-10-13,weekday,place-cntsq,Central,Red Line,5424.0,8250.8,8876.6,-38.9
+2025-10-13,weekday,place-chmnl,Charles/MGH,Red Line,2128.0,5543.2,6654.1,-68.0
+2025-10-13,weekday,place-chncl,Chinatown,Orange Line,18.0,3955.4,4305.4,-99.6
+2025-10-13,weekday,place-ccmnl,Community College,Orange Line,847.0,2457.6,3023.7,-72.0
+2025-10-13,weekday,place-coecl,Copley,Green Line,9627.0,7980.6,7980.3,20.6
+2025-10-13,weekday,place-crtst,Courthouse,Silver Line,1966.0,2253.6,2567.2,-23.4
+2025-10-13,weekday,place-davis,Davis,Red Line,3042.0,4866.6,5296.7,-42.6
+2025-10-13,weekday,place-dwnxg,Downtown Crossing,"Orange Line, Red Line",4977.0,10888.3,12269.6,-59.4
+2025-10-13,weekday,place-esomr,East Somerville,Green Line,34.2,70.5,75.8,-54.9
+2025-10-13,weekday,place-fldcr,Fields Corner,Red Line,1330.0,2377.4,2697.5,-50.7
+2025-10-13,weekday,place-forhl,Forest Hills,Orange Line,3.0,6328.0,7469.5,-100.0
+2025-10-13,weekday,place-gilmn,Gilman Square,Green Line,121.0,264.1,286.5,-57.8
+2025-10-13,weekday,place-gover,Government Center,"Blue Line, Green Line",3502.0,4821.1,5170.1,-32.3
+2025-10-13,weekday,place-grnst,Green Street,Orange Line,6.0,1799.9,2077.1,-99.7
+2025-10-13,weekday,place-harsq,Harvard,Red Line,6545.0,10860.0,11361.2,-42.4
+2025-10-13,weekday,place-haecl,Haymarket,"Green Line, Orange Line",3221.0,6453.5,6748.3,-52.3
+2025-10-13,weekday,place-hymnl,Hynes Convention Center,Green Line,4222.0,5288.6,5220.1,-19.1
+2025-10-13,weekday,place-jfk,JFK/UMass,Red Line,1560.0,4084.5,4808.4,-67.6
+2025-10-13,weekday,place-jaksn,Jackson Square,Orange Line,15.0,2846.1,3326.1,-99.5
+2025-10-13,weekday,place-knncl,Kendall/MIT,Red Line,4972.0,8412.3,9925.9,-49.9
+2025-10-13,weekday,place-kencl,Kenmore,Green Line,2373.0,4439.8,4535.1,-47.7
+2025-10-13,weekday,place-lech,Lechmere,Green Line,181.5,245.6,265.3,-31.6
+2025-10-13,weekday,place-mgngl,Magoun Square,Green Line,85.8,128.3,138.1,-37.9
+2025-10-13,weekday,place-mlmnl,Malden Center,Orange Line,3357.0,5719.4,6595.3,-49.1
+2025-10-13,weekday,place-masta,Massachusetts Avenue,Orange Line,35.0,3184.2,3658.5,-99.0
+2025-10-13,weekday,place-matt,Mattapan Line,Mattapan Line,1575.9,2785.5,3271.4,-51.8
+2025-10-13,weekday,place-mvbcl,Maverick,Blue Line,4705.0,7320.1,8106.1,-42.0
+2025-10-13,weekday,place-mdftf,Medford/Tufts,Green Line,61.7,181.5,203.0,-69.6
+2025-10-13,weekday,place-nqncy,North Quincy,Red Line,1610.0,2886.8,3386.6,-52.5
+2025-10-13,weekday,place-north,North Station,"Green Line, Orange Line",10708.0,11662.5,13084.0,-18.2
+2025-10-13,weekday,place-ogmnl,Oak Grove,Orange Line,1994.0,3496.9,4070.8,-51.0
+2025-10-13,weekday,place-orhte,Orient Heights,Blue Line,1626.0,3047.0,3426.0,-52.5
+2025-10-13,weekday,place-pktrm,Park Street,"Green Line, Red Line",5880.0,8842.8,9190.0,-36.0
+2025-10-13,weekday,place-portr,Porter,Red Line,2816.0,4190.9,4505.7,-37.5
+2025-10-13,weekday,place-prmnl,Prudential,Green Line,3489.0,2182.0,2137.6,63.2
+2025-10-13,weekday,place-qamnl,Quincy Adams,Red Line,927.0,1560.4,1835.5,-49.5
+2025-10-13,weekday,place-qnctr,Quincy Center,Red Line,1745.0,3374.7,3868.8,-54.9
+2025-10-13,weekday,place-rbmnl,Revere Beach,Blue Line,1309.0,2267.8,2518.2,-48.0
+2025-10-13,weekday,place-river,Riverside,Green Line,525.0,899.9,901.1,-41.7
+2025-10-13,weekday,place-rcmnl,Roxbury Crossing,Orange Line,4.0,2916.6,3388.0,-99.9
+2025-10-13,weekday,place-rugg,Ruggles,Orange Line,36.0,5463.2,6671.9,-99.5
+2025-10-13,weekday,place-shmnl,Savin Hill,Red Line,677.0,1248.0,1417.1,-52.2
+2025-10-13,weekday,place-spmnl,Science Park,Green Line,780.0,733.3,762.6,2.3
+2025-10-13,weekday,place-smmnl,Shawmut,Red Line,540.0,1085.6,1267.3,-57.4
+2025-10-13,weekday,place-sstat,South Station,"Red Line, Silver Line",9931.0,11868.8,13721.2,-27.6
+2025-10-13,weekday,place-state,State Street,"Blue Line, Orange Line",3008.0,7246.9,8717.0,-65.5
+2025-10-13,weekday,place-sbmnl,Stony Brook,Orange Line,6.0,1897.8,2150.5,-99.7
+2025-10-13,weekday,place-sdmnl,Suffolk Downs,Blue Line,221.0,501.1,568.7,-61.1
+2025-10-13,weekday,place-sull,Sullivan Square,Orange Line,2392.0,3949.4,4501.9,-46.9
+2025-10-13,weekday,place-symcl,Symphony,Green Line,1478.0,946.3,920.8,60.5
+2025-10-13,weekday,place-tumnl,Tufts Medical Center,Orange Line,25.0,3777.8,4535.5,-99.4
+2025-10-13,weekday,place-unsqu,Union Square,Green Line,69.4,135.3,144.6,-52.0
+2025-10-13,weekday,place-welln,Wellington,Orange Line,2263.0,3899.1,4551.5,-50.3
+2025-10-13,weekday,place-wlsta,Wollaston,Red Line,815.0,1734.5,2020.8,-59.7
+2025-10-13,weekday,place-wondl,Wonderland,Blue Line,2600.0,3759.9,4264.2,-39.0
+2025-10-13,weekday,place-wimnl,Wood Island,Blue Line,853.0,1318.7,1467.7,-41.9
+2025-10-13,weekday,place-wtcst,World Trade Center,Silver Line,1012.0,1200.2,1316.5,-23.1
+2026-01-25,weekend,place-aport,Airport,Blue Line,161.0,6078.3,4836.4,-96.7
+2026-01-25,weekend,place-alfcl,Alewife,Red Line,1083.0,5780.6,3687.0,-70.6
+2026-01-25,weekend,place-andrw,Andrew,Red Line,948.0,3255.3,2134.3,-55.6
+2026-01-25,weekend,place-aqucl,Aquarium,Blue Line,132.0,3333.0,3084.2,-95.7
+2026-01-25,weekend,place-armnl,Arlington,Green Line,1195.0,3907.7,3739.3,-68.0
+2026-01-25,weekend,place-asmnl,Ashmont,Red Line,1033.0,3756.3,2193.5,-52.9
+2026-01-25,weekend,place-astao,Assembly,Orange Line,668.0,2967.9,2588.3,-74.2
+2026-01-25,weekend,place-bbsta,Back Bay,Orange Line,2469.0,10028.9,6270.6,-60.6
+2026-01-25,weekend,place-balsq,Ball Square,Green Line,12.9,139.3,109.9,-88.3
+2026-01-25,weekend,place-bmmnl,Beachmont,Blue Line,34.0,2348.0,1560.5,-97.8
+2026-01-25,weekend,place-bomnl,Bowdoin,Blue Line,38.0,1406.3,666.0,-94.3
+2026-01-25,weekend,place-boyls,Boylston,Green Line,1455.0,3859.1,4181.6,-65.2
+2026-01-25,weekend,place-brntn,Braintree,Red Line,399.0,2316.0,1416.0,-71.8
+2026-01-25,weekend,place-brdwy,Broadway,Red Line,1234.0,3513.1,2393.2,-48.4
+2026-01-25,weekend,place-cntsq,Central,Red Line,2864.0,8250.8,6683.3,-57.1
+2026-01-25,weekend,place-chmnl,Charles/MGH,Red Line,1344.0,5543.2,2760.4,-51.3
+2026-01-25,weekend,place-chncl,Chinatown,Orange Line,1249.0,3955.4,3078.5,-59.4
+2026-01-25,weekend,place-ccmnl,Community College,Orange Line,456.0,2457.6,1039.7,-56.1
+2026-01-25,weekend,place-coecl,Copley,Green Line,2227.0,7980.6,7981.3,-72.1
+2026-01-25,weekend,place-crtst,Courthouse,Silver Line,550.0,2253.6,1468.3,-62.5
+2026-01-25,weekend,place-davis,Davis,Red Line,1301.0,4866.6,3789.1,-65.7
+2026-01-25,weekend,place-dwnxg,Downtown Crossing,"Orange Line, Red Line",2510.0,10888.3,7428.3,-66.2
+2026-01-25,weekend,place-esomr,East Somerville,Green Line,8.1,70.5,56.8,-85.7
+2026-01-25,weekend,place-fldcr,Fields Corner,Red Line,654.0,2377.4,1575.7,-58.5
+2026-01-25,weekend,place-forhl,Forest Hills,Orange Line,1557.0,6328.0,3468.6,-55.1
+2026-01-25,weekend,place-gilmn,Gilman Square,Green Line,23.5,264.1,207.2,-88.7
+2026-01-25,weekend,place-gover,Government Center,"Blue Line, Green Line",978.0,4821.1,3947.0,-75.2
+2026-01-25,weekend,place-grnst,Green Street,Orange Line,415.0,1799.9,1101.4,-62.3
+2026-01-25,weekend,place-harsq,Harvard,Red Line,2855.0,10860.0,9604.7,-70.3
+2026-01-25,weekend,place-haecl,Haymarket,"Green Line, Orange Line",3869.0,6453.5,5715.2,-32.3
+2026-01-25,weekend,place-hymnl,Hynes Convention Center,Green Line,1726.0,5288.6,5460.7,-68.4
+2026-01-25,weekend,place-jfk,JFK/UMass,Red Line,867.0,4084.5,2173.9,-60.1
+2026-01-25,weekend,place-jaksn,Jackson Square,Orange Line,670.0,2846.1,1631.9,-58.9
+2026-01-25,weekend,place-knncl,Kendall/MIT,Red Line,1523.0,8412.3,4498.5,-66.1
+2026-01-25,weekend,place-kencl,Kenmore,Green Line,1198.0,4439.8,4203.1,-71.5
+2026-01-25,weekend,place-lech,Lechmere,Green Line,29.7,245.6,196.0,-84.8
+2026-01-25,weekend,place-mgngl,Magoun Square,Green Line,28.6,128.3,103.5,-72.4
+2026-01-25,weekend,place-mlmnl,Malden Center,Orange Line,1246.0,5719.4,3525.2,-64.7
+2026-01-25,weekend,place-masta,Massachusetts Avenue,Orange Line,853.0,3184.2,1996.0,-57.3
+2026-01-25,weekend,place-matt,Mattapan Line,Mattapan Line,649.7,2785.5,1568.2,-58.6
+2026-01-25,weekend,place-mvbcl,Maverick,Blue Line,115.0,7320.1,5351.5,-97.9
+2026-01-25,weekend,place-mdftf,Medford/Tufts,Green Line,10.0,181.5,127.3,-92.1
+2026-01-25,weekend,place-nqncy,North Quincy,Red Line,609.0,2886.8,1634.9,-62.8
+2026-01-25,weekend,place-north,North Station,"Green Line, Orange Line",3362.0,11662.5,8031.2,-58.1
+2026-01-25,weekend,place-ogmnl,Oak Grove,Orange Line,559.0,3496.9,2045.5,-72.7
+2026-01-25,weekend,place-orhte,Orient Heights,Blue Line,44.0,3047.0,2079.0,-97.9
+2026-01-25,weekend,place-pktrm,Park Street,"Green Line, Red Line",2228.0,8842.8,7973.2,-72.1
+2026-01-25,weekend,place-portr,Porter,Red Line,1358.0,4190.9,3402.5,-60.1
+2026-01-25,weekend,place-prmnl,Prudential,Green Line,1117.0,2182.0,2292.7,-51.3
+2026-01-25,weekend,place-qamnl,Quincy Adams,Red Line,265.0,1560.4,867.2,-69.4
+2026-01-25,weekend,place-qnctr,Quincy Center,Red Line,808.0,3374.7,2094.1,-61.4
+2026-01-25,weekend,place-rbmnl,Revere Beach,Blue Line,35.0,2267.8,1633.2,-97.9
+2026-01-25,weekend,place-river,Riverside,Green Line,100.0,899.9,896.9,-88.9
+2026-01-25,weekend,place-rcmnl,Roxbury Crossing,Orange Line,760.0,2916.6,1712.4,-55.6
+2026-01-25,weekend,place-rugg,Ruggles,Orange Line,1184.0,5463.2,2435.5,-51.4
+2026-01-25,weekend,place-shmnl,Savin Hill,Red Line,336.0,1248.0,824.3,-59.2
+2026-01-25,weekend,place-spmnl,Science Park,Green Line,193.0,733.3,660.0,-70.8
+2026-01-25,weekend,place-smmnl,Shawmut,Red Line,258.0,1085.6,630.5,-59.1
+2026-01-25,weekend,place-sstat,South Station,"Red Line, Silver Line",2545.0,11868.8,7126.5,-64.3
+2026-01-25,weekend,place-state,State Street,"Blue Line, Orange Line",920.0,7246.9,3578.8,-74.3
+2026-01-25,weekend,place-sbmnl,Stony Brook,Orange Line,514.0,1897.8,1257.4,-59.1
+2026-01-25,weekend,place-sull,Sullivan Square,Orange Line,1079.0,3949.4,2538.3,-57.5
+2026-01-25,weekend,place-symcl,Symphony,Green Line,280.0,946.3,1010.2,-72.3
+2026-01-25,weekend,place-tumnl,Tufts Medical Center,Orange Line,1151.0,3777.8,1880.0,-38.8
+2026-01-25,weekend,place-unsqu,Union Square,Green Line,12.2,135.3,111.3,-89.0
+2026-01-25,weekend,place-welln,Wellington,Orange Line,843.0,3899.1,2215.9,-62.0
+2026-01-25,weekend,place-wlsta,Wollaston,Red Line,424.0,1734.5,1017.4,-58.3
+2026-01-25,weekend,place-wondl,Wonderland,Blue Line,53.0,3759.9,2469.0,-97.9
+2026-01-25,weekend,place-wimnl,Wood Island,Blue Line,6.0,1318.7,932.0,-99.4
+2026-01-25,weekend,place-wtcst,World Trade Center,Silver Line,335.0,1200.2,909.0,-63.1
+2026-01-26,weekday,place-aport,Airport,Blue Line,1170.0,6078.3,6569.2,-82.2
+2026-01-26,weekday,place-alfcl,Alewife,Red Line,630.0,5780.6,6616.4,-90.5
+2026-01-26,weekday,place-andrw,Andrew,Red Line,541.0,3255.3,3702.9,-85.4
+2026-01-26,weekday,place-aqucl,Aquarium,Blue Line,306.0,3333.0,3432.4,-91.1
+2026-01-26,weekday,place-armnl,Arlington,Green Line,793.0,3907.7,3974.4,-80.0
+2026-01-26,weekday,place-asmnl,Ashmont,Red Line,499.0,3756.3,4380.3,-88.6
+2026-01-26,weekday,place-astao,Assembly,Orange Line,436.0,2967.9,3119.5,-86.0
+2026-01-26,weekday,place-bbsta,Back Bay,Orange Line,1745.0,10028.9,11471.0,-84.8
+2026-01-26,weekday,place-balsq,Ball Square,Green Line,17.1,139.3,150.9,-88.7
+2026-01-26,weekday,place-bmmnl,Beachmont,Blue Line,273.0,2348.0,2653.2,-89.7
+2026-01-26,weekday,place-bomnl,Bowdoin,Blue Line,296.0,1406.3,1701.8,-82.6
+2026-01-26,weekday,place-boyls,Boylston,Green Line,695.0,3859.1,3732.2,-81.4
+2026-01-26,weekday,place-brntn,Braintree,Red Line,334.0,2316.0,2671.8,-87.5
+2026-01-26,weekday,place-brdwy,Broadway,Red Line,619.0,3513.1,3928.7,-84.2
+2026-01-26,weekday,place-cntsq,Central,Red Line,1302.0,8250.8,8876.6,-85.3
+2026-01-26,weekday,place-chmnl,Charles/MGH,Red Line,1382.0,5543.2,6654.1,-79.2
+2026-01-26,weekday,place-chncl,Chinatown,Orange Line,972.0,3955.4,4305.4,-77.4
+2026-01-26,weekday,place-ccmnl,Community College,Orange Line,233.0,2457.6,3023.7,-92.3
+2026-01-26,weekday,place-coecl,Copley,Green Line,1565.0,7980.6,7980.3,-80.4
+2026-01-26,weekday,place-crtst,Courthouse,Silver Line,291.0,2253.6,2567.2,-88.7
+2026-01-26,weekday,place-davis,Davis,Red Line,666.0,4866.6,5296.7,-87.4
+2026-01-26,weekday,place-dwnxg,Downtown Crossing,"Orange Line, Red Line",1606.0,10888.3,12269.6,-86.9
+2026-01-26,weekday,place-esomr,East Somerville,Green Line,16.5,70.5,75.8,-78.2
+2026-01-26,weekday,place-fldcr,Fields Corner,Red Line,308.0,2377.4,2697.5,-88.6
+2026-01-26,weekday,place-forhl,Forest Hills,Orange Line,919.0,6328.0,7469.5,-87.7
+2026-01-26,weekday,place-gilmn,Gilman Square,Green Line,45.5,264.1,286.5,-84.1
+2026-01-26,weekday,place-gover,Government Center,"Blue Line, Green Line",574.0,4821.1,5170.1,-88.9
+2026-01-26,weekday,place-grnst,Green Street,Orange Line,243.0,1799.9,2077.1,-88.3
+2026-01-26,weekday,place-harsq,Harvard,Red Line,1528.0,10860.0,11361.2,-86.6
+2026-01-26,weekday,place-haecl,Haymarket,"Green Line, Orange Line",905.0,6453.5,6748.3,-86.6
+2026-01-26,weekday,place-hymnl,Hynes Convention Center,Green Line,951.0,5288.6,5220.1,-81.8
+2026-01-26,weekday,place-jfk,JFK/UMass,Red Line,410.0,4084.5,4808.4,-91.5
+2026-01-26,weekday,place-jaksn,Jackson Square,Orange Line,389.0,2846.1,3326.1,-88.3
+2026-01-26,weekday,place-knncl,Kendall/MIT,Red Line,1104.0,8412.3,9925.9,-88.9
+2026-01-26,weekday,place-kencl,Kenmore,Green Line,645.0,4439.8,4535.1,-85.8
+2026-01-26,weekday,place-lech,Lechmere,Green Line,49.1,245.6,265.3,-81.5
+2026-01-26,weekday,place-mgngl,Magoun Square,Green Line,26.6,128.3,138.1,-80.7
+2026-01-26,weekday,place-mlmnl,Malden Center,Orange Line,668.0,5719.4,6595.3,-89.9
+2026-01-26,weekday,place-masta,Massachusetts Avenue,Orange Line,556.0,3184.2,3658.5,-84.8
+2026-01-26,weekday,place-matt,Mattapan Line,Mattapan Line,297.2,2785.5,3271.4,-90.9
+2026-01-26,weekday,place-mvbcl,Maverick,Blue Line,835.0,7320.1,8106.1,-89.7
+2026-01-26,weekday,place-mdftf,Medford/Tufts,Green Line,13.2,181.5,203.0,-93.5
+2026-01-26,weekday,place-nqncy,North Quincy,Red Line,282.0,2886.8,3386.6,-91.7
+2026-01-26,weekday,place-north,North Station,"Green Line, Orange Line",5576.0,11662.5,13084.0,-57.4
+2026-01-26,weekday,place-ogmnl,Oak Grove,Orange Line,520.0,3496.9,4070.8,-87.2
+2026-01-26,weekday,place-orhte,Orient Heights,Blue Line,310.0,3047.0,3426.0,-91.0
+2026-01-26,weekday,place-pktrm,Park Street,"Green Line, Red Line",1366.0,8842.8,9190.0,-85.1
+2026-01-26,weekday,place-portr,Porter,Red Line,692.0,4190.9,4505.7,-84.6
+2026-01-26,weekday,place-prmnl,Prudential,Green Line,694.0,2182.0,2137.6,-67.5
+2026-01-26,weekday,place-qamnl,Quincy Adams,Red Line,166.0,1560.4,1835.5,-91.0
+2026-01-26,weekday,place-qnctr,Quincy Center,Red Line,395.0,3374.7,3868.8,-89.8
+2026-01-26,weekday,place-rbmnl,Revere Beach,Blue Line,267.0,2267.8,2518.2,-89.4
+2026-01-26,weekday,place-river,Riverside,Green Line,156.0,899.9,901.1,-82.7
+2026-01-26,weekday,place-rcmnl,Roxbury Crossing,Orange Line,446.0,2916.6,3388.0,-86.8
+2026-01-26,weekday,place-rugg,Ruggles,Orange Line,912.0,5463.2,6671.9,-86.3
+2026-01-26,weekday,place-shmnl,Savin Hill,Red Line,148.0,1248.0,1417.1,-89.6
+2026-01-26,weekday,place-spmnl,Science Park,Green Line,134.0,733.3,762.6,-82.4
+2026-01-26,weekday,place-smmnl,Shawmut,Red Line,139.0,1085.6,1267.3,-89.0
+2026-01-26,weekday,place-sstat,South Station,"Red Line, Silver Line",1476.0,11868.8,13721.2,-89.2
+2026-01-26,weekday,place-state,State Street,"Blue Line, Orange Line",880.0,7246.9,8717.0,-89.9
+2026-01-26,weekday,place-sbmnl,Stony Brook,Orange Line,249.0,1897.8,2150.5,-88.4
+2026-01-26,weekday,place-sdmnl,Suffolk Downs,Blue Line,7.0,501.1,568.7,-98.8
+2026-01-26,weekday,place-sull,Sullivan Square,Orange Line,773.0,3949.4,4501.9,-82.8
+2026-01-26,weekday,place-symcl,Symphony,Green Line,206.0,946.3,920.8,-77.6
+2026-01-26,weekday,place-tumnl,Tufts Medical Center,Orange Line,705.0,3777.8,4535.5,-84.5
+2026-01-26,weekday,place-unsqu,Union Square,Green Line,15.1,135.3,144.6,-89.6
+2026-01-26,weekday,place-welln,Wellington,Orange Line,543.0,3899.1,4551.5,-88.1
+2026-01-26,weekday,place-wlsta,Wollaston,Red Line,168.0,1734.5,2020.8,-91.7
+2026-01-26,weekday,place-wondl,Wonderland,Blue Line,398.0,3759.9,4264.2,-90.7
+2026-01-26,weekday,place-wimnl,Wood Island,Blue Line,112.0,1318.7,1467.7,-92.4
+2026-01-26,weekday,place-wtcst,World Trade Center,Silver Line,212.0,1200.2,1316.5,-83.9
+2026-02-23,weekday,place-aport,Airport,Blue Line,506.0,6078.3,6569.2,-92.3
+2026-02-23,weekday,place-alfcl,Alewife,Red Line,569.0,5780.6,6616.4,-91.4
+2026-02-23,weekday,place-andrw,Andrew,Red Line,610.0,3255.3,3702.9,-83.5
+2026-02-23,weekday,place-aqucl,Aquarium,Blue Line,353.0,3333.0,3432.4,-89.7
+2026-02-23,weekday,place-armnl,Arlington,Green Line,538.0,3907.7,3974.4,-86.5
+2026-02-23,weekday,place-asmnl,Ashmont,Red Line,609.0,3756.3,4380.3,-86.1
+2026-02-23,weekday,place-astao,Assembly,Orange Line,224.0,2967.9,3119.5,-92.8
+2026-02-23,weekday,place-bbsta,Back Bay,Orange Line,1156.0,10028.9,11471.0,-89.9
+2026-02-23,weekday,place-balsq,Ball Square,Green Line,0.8,139.3,150.9,-99.5
+2026-02-23,weekday,place-bmmnl,Beachmont,Blue Line,336.0,2348.0,2653.2,-87.3
+2026-02-23,weekday,place-bomnl,Bowdoin,Blue Line,292.0,1406.3,1701.8,-82.8
+2026-02-23,weekday,place-boyls,Boylston,Green Line,34.0,3859.1,3732.2,-99.1
+2026-02-23,weekday,place-brntn,Braintree,Red Line,220.0,2316.0,2671.8,-91.8
+2026-02-23,weekday,place-brdwy,Broadway,Red Line,620.0,3513.1,3928.7,-84.2
+2026-02-23,weekday,place-cntsq,Central,Red Line,843.0,8250.8,8876.6,-90.5
+2026-02-23,weekday,place-chmnl,Charles/MGH,Red Line,1569.0,5543.2,6654.1,-76.4
+2026-02-23,weekday,place-chncl,Chinatown,Orange Line,742.0,3955.4,4305.4,-82.8
+2026-02-23,weekday,place-ccmnl,Community College,Orange Line,280.0,2457.6,3023.7,-90.7
+2026-02-23,weekday,place-coecl,Copley,Green Line,875.0,7980.6,7980.3,-89.0
+2026-02-23,weekday,place-crtst,Courthouse,Silver Line,253.0,2253.6,2567.2,-90.1
+2026-02-23,weekday,place-davis,Davis,Red Line,564.0,4866.6,5296.7,-89.4
+2026-02-23,weekday,place-dwnxg,Downtown Crossing,"Orange Line, Red Line",1481.0,10888.3,12269.6,-87.9
+2026-02-23,weekday,place-esomr,East Somerville,Green Line,3.5,70.5,75.8,-95.4
+2026-02-23,weekday,place-fldcr,Fields Corner,Red Line,244.0,2377.4,2697.5,-91.0
+2026-02-23,weekday,place-forhl,Forest Hills,Orange Line,1040.0,6328.0,7469.5,-86.1
+2026-02-23,weekday,place-gilmn,Gilman Square,Green Line,11.2,264.1,286.5,-96.1
+2026-02-23,weekday,place-gover,Government Center,"Blue Line, Green Line",324.0,4821.1,5170.1,-93.7
+2026-02-23,weekday,place-grnst,Green Street,Orange Line,205.0,1799.9,2077.1,-90.1
+2026-02-23,weekday,place-harsq,Harvard,Red Line,1168.0,10860.0,11361.2,-89.7
+2026-02-23,weekday,place-haecl,Haymarket,"Green Line, Orange Line",917.0,6453.5,6748.3,-86.4
+2026-02-23,weekday,place-hymnl,Hynes Convention Center,Green Line,580.0,5288.6,5220.1,-88.9
+2026-02-23,weekday,place-jfk,JFK/UMass,Red Line,369.0,4084.5,4808.4,-92.3
+2026-02-23,weekday,place-jaksn,Jackson Square,Orange Line,409.0,2846.1,3326.1,-87.7
+2026-02-23,weekday,place-knncl,Kendall/MIT,Red Line,842.0,8412.3,9925.9,-91.5
+2026-02-23,weekday,place-kencl,Kenmore,Green Line,694.0,4439.8,4535.1,-84.7
+2026-02-23,weekday,place-lech,Lechmere,Green Line,10.1,245.6,265.3,-96.2
+2026-02-23,weekday,place-mgngl,Magoun Square,Green Line,5.8,128.3,138.1,-95.8
+2026-02-23,weekday,place-mlmnl,Malden Center,Orange Line,796.0,5719.4,6595.3,-87.9
+2026-02-23,weekday,place-masta,Massachusetts Avenue,Orange Line,516.0,3184.2,3658.5,-85.9
+2026-02-23,weekday,place-matt,Mattapan Line,Mattapan Line,429.7,2785.5,3271.4,-86.9
+2026-02-23,weekday,place-mvbcl,Maverick,Blue Line,1241.0,7320.1,8106.1,-84.7
+2026-02-23,weekday,place-mdftf,Medford/Tufts,Green Line,3.4,181.5,203.0,-98.3
+2026-02-23,weekday,place-nqncy,North Quincy,Red Line,285.0,2886.8,3386.6,-91.6
+2026-02-23,weekday,place-north,North Station,"Green Line, Orange Line",1653.0,11662.5,13084.0,-87.4
+2026-02-23,weekday,place-ogmnl,Oak Grove,Orange Line,334.0,3496.9,4070.8,-91.8
+2026-02-23,weekday,place-orhte,Orient Heights,Blue Line,129.0,3047.0,3426.0,-96.2
+2026-02-23,weekday,place-pktrm,Park Street,"Green Line, Red Line",925.0,8842.8,9190.0,-89.9
+2026-02-23,weekday,place-portr,Porter,Red Line,527.0,4190.9,4505.7,-88.3
+2026-02-23,weekday,place-prmnl,Prudential,Green Line,484.0,2182.0,2137.6,-77.4
+2026-02-23,weekday,place-qamnl,Quincy Adams,Red Line,147.0,1560.4,1835.5,-92.0
+2026-02-23,weekday,place-qnctr,Quincy Center,Red Line,256.0,3374.7,3868.8,-93.4
+2026-02-23,weekday,place-rbmnl,Revere Beach,Blue Line,295.0,2267.8,2518.2,-88.3
+2026-02-23,weekday,place-river,Riverside,Green Line,24.0,899.9,901.1,-97.3
+2026-02-23,weekday,place-rcmnl,Roxbury Crossing,Orange Line,400.0,2916.6,3388.0,-88.2
+2026-02-23,weekday,place-rugg,Ruggles,Orange Line,1087.0,5463.2,6671.9,-83.7
+2026-02-23,weekday,place-shmnl,Savin Hill,Red Line,170.0,1248.0,1417.1,-88.0
+2026-02-23,weekday,place-spmnl,Science Park,Green Line,162.0,733.3,762.6,-78.8
+2026-02-23,weekday,place-smmnl,Shawmut,Red Line,156.0,1085.6,1267.3,-87.7
+2026-02-23,weekday,place-sstat,South Station,"Red Line, Silver Line",1325.0,11868.8,13721.2,-90.3
+2026-02-23,weekday,place-state,State Street,"Blue Line, Orange Line",962.0,7246.9,8717.0,-89.0
+2026-02-23,weekday,place-sbmnl,Stony Brook,Orange Line,258.0,1897.8,2150.5,-88.0
+2026-02-23,weekday,place-sdmnl,Suffolk Downs,Blue Line,9.0,501.1,568.7,-98.4
+2026-02-23,weekday,place-sull,Sullivan Square,Orange Line,718.0,3949.4,4501.9,-84.1
+2026-02-23,weekday,place-symcl,Symphony,Green Line,203.0,946.3,920.8,-78.0
+2026-02-23,weekday,place-tumnl,Tufts Medical Center,Orange Line,867.0,3777.8,4535.5,-80.9
+2026-02-23,weekday,place-unsqu,Union Square,Green Line,9.8,135.3,144.6,-93.2
+2026-02-23,weekday,place-welln,Wellington,Orange Line,465.0,3899.1,4551.5,-89.8
+2026-02-23,weekday,place-wlsta,Wollaston,Red Line,162.0,1734.5,2020.8,-92.0
+2026-02-23,weekday,place-wondl,Wonderland,Blue Line,374.0,3759.9,4264.2,-91.2
+2026-02-23,weekday,place-wimnl,Wood Island,Blue Line,74.0,1318.7,1467.7,-95.0
+2026-02-23,weekday,place-wtcst,World Trade Center,Silver Line,217.0,1200.2,1316.5,-83.5
