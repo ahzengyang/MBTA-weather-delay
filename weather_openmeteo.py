@@ -243,7 +243,8 @@ TABLE_COLUMNS = (
     ["location", "observed_at_utc", "observed_at_local", "latitude", "longitude"]
     + CORE_VARS
     + FORECAST_ONLY_VARS
-    + ["is_precipitating", "is_raining", "is_snowing", "ingested_at_utc"]
+    +     + ["is_precipitating", "is_raining", "is_snowing", "is_freezing_precip",
+       "ingested_at_utc"]
 )
 
 
