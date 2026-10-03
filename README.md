@@ -19,7 +19,6 @@ We are looking to see if major weather problems caused delays within the subway 
 ---
 
 ## Data Sources and Integration Goal
-- Follow the direction given in the 1st assignment
 
 ### Sources
 | # | Source & Link | Method | What it contains | Update frequency | Access requirements |
@@ -33,7 +32,17 @@ Note: If we need a key, say which environment variable holds it and make sure th
 
 ### Integration Goal
 - Follow the direction given in the 1st assignment
+<u>Subway Stations Dataset</u>
+Join Keys: parent_station, latitude, longitude
 
+<u>MBTA Delays Dataset</u>
+Join keys: parent_station, hour_utc
+
+<u>Weather Dataset</u>
+Join keys: lat and longitude to station
+
+<u>Subway Ridership Dataset</u>
+Join keys: parent_station, utc_hour
 ---
 
 ## Setup Instructions (Locally)
