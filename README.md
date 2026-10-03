@@ -22,23 +22,30 @@ We are looking to see if major weather problems caused delays within the subway 
 
 ## Data Sources and Integration Goal
 
-- Follow the direction given in the 1st assignment
-
 ### Sources
-
-| #   | Source & Link                                                                                             | Method            | What it contains                                                                                                                                                                                                                    | Update frequency       | Access requirements       |
-| --- | --------------------------------------------------------------------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------------- |
-| 1   | [MBTA Delays](<[https://exact-url](https://performancedata.mbta.com/lamp/subway-on-time-performance-v1)>) | API               | One row for each hour and each station, containing the average delay of the trains within that hour                                                                                                                                 | daily                  | none                      |
-| 2   | [Weather](<(https://archive-api.open-meteo.com/v1/archive)>)                                              | API               | Hourly weather for each MBTA station (above ground specifically) based on longitude and latitude. Includes measures of temperature, precipitation (either rain OR snow), wind speed/gusts, cloud coverage, and WMO weather code.    | Hourly                 | none                      |
-| 3   | [Subway Ridership](<(https://gis.data.mass.gov/datasets/MassDOT::mbta-gated-station-entries)>)            | Scraped           | ...                                                                                                                                                                                                                                 | ...                    | `robots.txt` checked DATE |
-| 4   | [Subway Stations](https://www.mbta.com/developers/gtfs)                                                   | TXT File Download | Bulk schedule data in General Transit Feed Specification format about MTBA system and service. Multiple datasets which include stops.txt detailing stop id, name, longitude, latitude, searchable address, platform name, and more. | Multiple times a month | None                      |
+| # | Source & Link | Method | What it contains | Update frequency | Access requirements |
+| --- | --- | --- | --- | --- | --- |
+| 1 | [MBTA Delays]([https://exact-url](https://performancedata.mbta.com/lamp/subway-on-time-performance-v1)) | API | One row for each hour and each station, containing the average delay of the trains within that hour | daily | none
+| 2 | [Weather](https://open-meteo.com/en/docs/gfs-api) | API | Hourly weather for each MBTA station (above ground specifically) based on longitude and latitude. Includes measures of temperature, precipitation (either rain OR snow), wind speed/gusts, cloud coverage, and WMO weather code. | Hourly | none |
+| 3 | [Subway Ridership]((https://gis.data.mass.gov/datasets/MassDOT::mbta-gated-station-entries)) | Scraped | ... | ... | `robots.txt` checked DATE |
+| 4 | [Subway Stations](https://www.mbta.com/developers/gtfs) | TXT File Download | Bulk schedule data in General Transit Feed Specification format about MTBA system and service. Multiple datasets which include stops.txt detailing stop id, name, longitude, latitude, searchable address, platform name, and more.  | Multiple times a month | None |
 
 Note: If we need a key, say which environment variable holds it and make sure that variable also appears in the .env_template
 
 ### Integration Goal
 
 - Follow the direction given in the 1st assignment
+<u>Subway Stations Dataset</u>
+Join Keys: parent_station, latitude, longitude
 
+<u>MBTA Delays Dataset</u>
+Join keys: parent_station, hour_utc
+
+<u>Weather Dataset</u>
+Join keys: lat and longitude to station
+
+<u>Subway Ridership Dataset</u>
+Join keys: parent_station, utc_hour
 ---
 
 ## Setup Instructions (Locally)
