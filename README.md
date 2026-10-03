@@ -1,5 +1,5 @@
-# Massachusetts Bay Transportation Authority Weather Delays Since 2024
-Add a brief description of your project, in a sentence or two.
+# Massachusetts Bay Transportation Authority Weather Delays Since June 1st, 2025
+We are looking to see if major weather problems caused delays within the subway system for the MBTA. We are taking data sources of Delays, Weather, Stations, and Number of Passengers for the MBTA since June 1st, 2025 in order to find possible correlations with weather on delays and number of people arriving at stations on an hourly basis.
 
 ## Team Members
 
