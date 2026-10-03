@@ -71,6 +71,30 @@ def _utc_ms_to_local_date(s: pd.Series) -> pd.Series:
             .dt.tz_convert(TZ).dt.tz_localize(None).dt.normalize())
 
 
+def api_date_range(session: requests.Session | None = None) -> tuple[pd.Timestamp, pd.Timestamp]:
+    """First and last service date currently published on the API."""
+    stats = ('[{"statisticType":"min","onStatisticField":"service_date","outStatisticFieldName":"lo"},'
+             '{"statisticType":"max","onStatisticField":"service_date","outStatisticFieldName":"hi"}]')
+    r = (session or _session()).get(GSE_URL, timeout=60, params={
+        "f": "json", "where": "1=1", "outStatistics": stats})
+    r.raise_for_status()
+    a = r.json()["features"][0]["attributes"]
+    lo, hi = _utc_ms_to_local_date(pd.Series([a["lo"], a["hi"]]))
+    return lo, hi
+
+
+def local_date_range(path: str) -> tuple[pd.Timestamp, pd.Timestamp]:
+    """First and last service date in a downloaded GSE.csv."""
+    s = pd.read_csv(path, encoding="utf-8-sig", usecols=["service_date"])["service_date"]
+    d = (pd.to_datetime(s, format="%Y/%m/%d %H:%M:%S%z", utc=True)
+         .dt.tz_convert(TZ).dt.tz_localize(None).dt.normalize())
+    return d.min(), d.max()
+
+
+def available_range(local: str | None = None) -> tuple[pd.Timestamp, pd.Timestamp]:
+    return local_date_range(local) if local else api_date_range()
+
+
 def _fetch_one_date(session: requests.Session, d: pd.Timestamp) -> list[dict]:
     lo = d.strftime("%Y-%m-%d")
     hi = (d + pd.Timedelta(days=1)).strftime("%Y-%m-%d")

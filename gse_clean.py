@@ -61,6 +61,11 @@ def clean(raw: pd.DataFrame, calendar_dates=None) -> pd.DataFrame:
     """calendar_dates: if given, keep only rows whose local date is in it."""
     df = raw.copy()
     df["gated_entries"] = pd.to_numeric(df["gated_entries"], errors="coerce")
+    # a handful of stray Longwood rows (1 entry each) have no stop_id
+    missing = df["stop_id"].isna()
+    if missing.any():
+        print(f"Dropped {missing.sum():,} rows with no stop_id")
+        df = df[~missing]
     df = drop_duplicates(df)
     df = add_datetime(df)
     if calendar_dates is not None:

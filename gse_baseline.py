@@ -46,19 +46,6 @@ def baseline(daily: pd.DataFrame) -> pd.DataFrame:
         .sort_values("station_name").reset_index(drop=True)
 
 
-def attach_baseline(event_hourly: pd.DataFrame, base: pd.DataFrame) -> pd.DataFrame:
-    """Hourly event rows + each station's yearly daily averages."""
-    df = event_hourly.merge(
-        base[["stop_id", "avg_daily_all", "avg_daily_weekday",
-              "avg_daily_weekend", "days_counted"]],
-        on="stop_id", how="left",
-    )
-    cols = ["datetime", "day_type", "stop_id", "station_name", "lines",
-            "hourly_entries", "avg_daily_all", "avg_daily_weekday",
-            "avg_daily_weekend", "days_counted"]
-    return df[cols].sort_values(["datetime", "station_name"]).reset_index(drop=True)
-
-
 def compare(event_daily: pd.DataFrame, base: pd.DataFrame) -> pd.DataFrame:
     df = event_daily.merge(
         base[["stop_id", "avg_daily_all", "avg_daily_weekday", "avg_daily_weekend"]],
