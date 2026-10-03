@@ -1,1 +1,11 @@
+data/raw/
+data/processed/*.db
+data/processed/*.csv
+data/processed/*.parquet
 
+logs/
+__pycache__/
+*.pyc
+.venv/
+.env
+.DS_Store
