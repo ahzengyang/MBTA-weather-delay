@@ -1,6 +1,5 @@
+__pycache__
 .env
-source1_mbta_lamp_performance.py
-
 data/raw/
 data/processed/*.db
 data/processed/*.csv

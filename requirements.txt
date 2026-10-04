@@ -1,3 +1,15 @@
-pandas>=2.1
+# --- source1_mbta_lamp_delay.py (data pipeline) ---
 requests>=2.31
-pyarrow>=14.0
+pandas>=2.2
+numpy>=1.26
+pyarrow>=14.0              # reads the LAMP Parquet files
+google-cloud-storage>=2.10 # GCS upload (installs google-api-core)
+python-dotenv>=1.0         # used by user_definition.py
+ 
+# --- mbta_lamp_api.py (FastAPI service) ---
+fastapi>=0.100
+uvicorn>=0.23
+ 
+# --- mbta_lamp_api_client.ipynb (notebook) ---
+matplotlib>=3.7
+ipykernel>=6.0        

@@ -33,6 +33,19 @@ We are looking to see if major weather problems caused delays within the subway 
 Note: If we need a key, say which environment variable holds it and make sure that variable also appears in the .env_template
 
 ### Integration Goal
+<u>Subway Stations Dataset</u>
+Join Keys: parent_station, latitude, longitude
+
+<u>MBTA Delays Dataset</u>
+Join keys: parent_station, hour_utc
+
+<u>Weather Dataset</u>
+Join keys: lat and longitude to station
+
+<u>Subway Ridership Dataset</u>
+Join keys: parent_station, utc_hour
+
+
 
 - Follow the direction given in the 1st assignment
 <u>Subway Stations Dataset</u>
