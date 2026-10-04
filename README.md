@@ -33,19 +33,6 @@ We are looking to see if major weather problems caused delays within the subway 
 Note: If we need a key, say which environment variable holds it and make sure that variable also appears in the .env_template
 
 ### Integration Goal
-<u>Subway Stations Dataset</u>
-Join Keys: parent_station, latitude, longitude
-
-<u>MBTA Delays Dataset</u>
-Join keys: parent_station, hour_utc
-
-<u>Weather Dataset</u>
-Join keys: lat and longitude to station
-
-<u>Subway Ridership Dataset</u>
-Join keys: parent_station, utc_hour
-
-
 
 MBTA Delays Dataset supplies the outcome of schedule deviation per train per station per minute. Weather Dataset supplies the weather at a station at a given time. Ridership Dataset supplies the weight of how many people were impacted by the delay instead of just looking at median delay. Stations Dataset tells us if the station is open to the sky which helps us look at the effect of weather for different classifications of stations.
   
