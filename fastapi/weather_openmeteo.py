@@ -1,18 +1,16 @@
 """
-Source 2: Open-Meteo historical hourly weather for Boston (API, no key needed)
+Open-Meteo historical hourly weather for Boston (API)
 
-Two endpoints, because they trade off differently:
+Two endpoints:
 
-  ARCHIVE (default)  https://archive-api.open-meteo.com/v1/archive
-      ERA5 reanalysis, 1940 -> ~yesterday. Long history, but a coarse ~25 km
-      grid and NO `visibility` variable (ERA5 doesn't model it).
+  Archive (default)  https://archive-api.open-meteo.com/v1/archive
+      1940 to ~ yesterday. On roughly a ~25 km grid with no visibility variables.
 
-  HISTORICAL FORECAST https://historical-forecast-api.open-meteo.com/v1/forecast
-      Archived high-resolution forecast runs, 2022 -> today. ~2 km grid and
-      includes `visibility`. Use this if you want visibility or finer detail.
+  Historical Forceast https://historical-forecast-api.open-meteo.com/v1/forecast
+      2022 to today. On roughly a ~2 km grid and includes visibility. 
 
-Both take start_date / end_date, so unlike the live forecast endpoint you can
-request exactly the dates your delay data covers.
+Both take start_date and end_date, so we can request exactly the dates our delay 
+data covers.
 """
 
 from __future__ import annotations
@@ -34,24 +32,18 @@ HISTORICAL_FORECAST_URL = "https://historical-forecast-api.open-meteo.com/v1/for
 
 LOCAL_TZ = "America/New_York"
 
-# We ALWAYS ask the API for UTC and convert to local ourselves. Open-Meteo's
-# `timezone` parameter applies a single fixed UTC offset to the whole request
-# instead of real DST rules, which silently shifts every EST-period row by an
-# hour. UTC has no ambiguous or nonexistent hours, so converting is exact.
 API_TIMEZONE = "GMT"
 
-# Available on both endpoints.
 CORE_VARS = [
     "temperature_2m",
     "rain",
     "snowfall",
     "wind_gusts_10m",
 ]
-# Only on the historical-forecast endpoint.
+
 FORECAST_ONLY_VARS = ["visibility"]
 
-# Enough spread to distinguish tunnel from surface running. Swap in the real
-# coordinates that source 4 scrapes from each station's Wikipedia infobox.
+
 SAMPLE_LOCATIONS = {
     "Downtown Boston": (42.3554, -71.0605),   # Park St / tunnel core
     "Boston College": (42.3400, -71.1665),    # Green Line B, surface
@@ -67,8 +59,6 @@ LOG_PATH = Path("logs") / "weather.log"
 
 MAX_RETRIES = 5
 TIMEOUT_SECONDS = 60
-# Retry these; anything else (notably 400) is a permanent error and retrying
-# it just burns quota for the same failure.
 RETRYABLE_STATUS = {408, 425, 429, 500, 502, 503, 504}
 
 for _d in (RAW_DIR, PROCESSED_DIR, LOG_PATH.parent):
@@ -99,8 +89,7 @@ def _get_with_retry(url: str, params: dict) -> dict:
                 if "hourly" not in data:
                     raise WeatherFetchError(f"unexpected response: {data}")
                 return data
-
-            # Open-Meteo returns {"error": true, "reason": "..."} on failure.
+              
             try:
                 reason = resp.json().get("reason", resp.text[:200])
             except ValueError:
@@ -173,18 +162,12 @@ def fetch_weather(
 
     df = pd.DataFrame(data["hourly"]).rename(columns={"time": "observed_at_utc"})
 
-    # Returned as naive GMT strings. Label them UTC, then convert -- tz_convert
-    # applies real DST rules, so nothing is dropped or mislabelled.
     df["observed_at_utc"] = pd.to_datetime(df["observed_at_utc"], utc=True)
     df["observed_at_local"] = df["observed_at_utc"].dt.tz_convert(local_tz)
 
-    # These are the coordinates the API SNAPPED to, which may differ from the
-    # ones we asked for -- they are the real identity of the observation.
     df["latitude"] = data["latitude"]
     df["longitude"] = data["longitude"]
 
-    # `precipitation` is rain + snow water equivalent, so keying is_raining on
-    # it labels every snowstorm as rain. Use `rain` for rain specifically.
     zeros = pd.Series(0.0, index=df.index)
     wet = df.get("rain", zeros).fillna(0) > 0
     temp = df.get("temperature_2m", zeros).fillna(0)
@@ -222,7 +205,6 @@ def fetch_weather_for_locations(
         try:
             part = fetch_weather(lat, lon, start_date, end_date, **kwargs)
         except WeatherFetchError:
-            # One bad location must not kill the whole run.
             log.exception("%s failed; continuing", name)
             failed.append(name)
             continue
