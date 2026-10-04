@@ -26,7 +26,7 @@ Add a brief description of your project, in a sentence or two.
 | --- | --- | --- | --- | --- | --- |
 | 1 | [MBTA Delays]([https://exact-url](https://performancedata.mbta.com/lamp/subway-on-time-performance-v1)) | API | rows, columns, time range, geography — in your own words | daily / monthly / static | free key, 100 req/day |
 | 2 | [Weather]((https://archive-api.open-meteo.com/v1/archive)) | API | Hourly weather for each MBTA station above ground based on longitude and latitude. Includes measures of temperature, rain, precipitation, snow, wind speed, wind gusts, WMO weather code, and cloud coverage. | Hourly | none |
-| 3 | [Subway Ridership]((https://gis.data.mass.gov/datasets/MassDOT::mbta-gated-station-entries)) | Scraped | Contains monthly per station gated entry counts for the past two years (rolling). Website gets updated every 2 months. | ... | `robots.txt` checked DATE, no access restrictions, public access. |
+| 3 | [Subway Ridership]((https://gis.data.mass.gov/datasets/MassDOT::mbta-gated-station-entries)) | Scraped | Contains monthly per station gated entry counts for the past two years (rolling). | Every 2 months | `robots.txt` checked DATE, no access restrictions, public access. |
 | 4 | [Subway Stations](https://www.mbta.com/developers/gtfs) | TXT File Download | Bulk schedule data in General Transit Feed Specification format about MTBA system and service. Multiple datasets which include stops.txt detailing stop id, name, longitude, latitude, searchable address, platform name, and more.  | Multiple times a month | None |
 
 Note: If we need a key, say which environment variable holds it and make sure that variable also appears in the .env_template
