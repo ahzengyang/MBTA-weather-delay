@@ -10,7 +10,7 @@ the script uploads for that range.
 
 Endpoints
 ---------
-GET  /panel?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD[&format=csv][&checks=false]
+GET  /panel?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD[&format=csv]
      The panel for an inclusive date range, as JSON (default) or CSV.
 POST /panel/upload?start_date=...&end_date=...
      Builds the same panel and uploads it to GCS, exactly like the script.
@@ -26,7 +26,7 @@ user_definition.py):
     uvicorn mbta_lamp_api:app --reload
 
 Settings (environment variables, optional)
-    MBTA_API_MAX_RANGE_DAYS  longest range one request may ask for (default 31)
+    MBTA_API_MAX_RANGE_DAYS  longest range one request may ask for (default 500)
     MBTA_API_CACHE_DAYS      processed days kept in memory (default 62)
 """
 
@@ -47,7 +47,7 @@ from google.api_core.exceptions import GoogleAPIError
 
 import source1_mbta_lamp_delay as lamp
 
-MAX_RANGE_DAYS = int(os.getenv("MBTA_API_MAX_RANGE_DAYS", "31"))
+MAX_RANGE_DAYS = int(os.getenv("MBTA_API_MAX_RANGE_DAYS", "500"))
 CACHE_DAYS = int(os.getenv("MBTA_API_CACHE_DAYS", "62"))
 MIN_AGE_DAYS = 2   # same default as the script's --min-age-days
 
@@ -68,9 +68,9 @@ def _complete_cutoff() -> date:
 
 
 @lru_cache(maxsize=CACHE_DAYS)
-def _cached_day(d: date, checks: bool) -> tuple[pd.DataFrame, list[str]]:
+def _cached_day(d: date) -> pd.DataFrame:
     """Processed day, cached. Only complete days are routed here; failures aren't cached."""
-    return lamp.process_day(d, lamp._session(), checks)
+    return lamp.process_day(d, lamp._session())
 
 
 def _validate_range(start_date: date, end_date: date) -> list[date]:
@@ -83,24 +83,20 @@ def _validate_range(start_date: date, end_date: date) -> list[date]:
     return [start_date + timedelta(days=i) for i in range(n_days)]
 
 
-def build_panel(start_date: date, end_date: date, checks: bool) -> dict:
+def build_panel(start_date: date, end_date: date) -> dict:
     """Same steps as the script's collect() + station_hour_panel(), with per-day caching."""
     days = _validate_range(start_date, end_date)
     cutoff = _complete_cutoff()
     sess = lamp._session()
 
-    slim: list[pd.DataFrame] = []
+    frames: list[pd.DataFrame] = []
     loaded: list[str] = []
     skipped: list[dict] = []
-    failed_checks: dict[str, list[str]] = {}
 
     for i, d in enumerate(days, 1):
         print(f"\n[{i}/{len(days)}] Fetching {d} ...")
         try:
-            if d <= cutoff:
-                day_slim, failed = _cached_day(d, checks)
-            else:
-                day_slim, failed = lamp.process_day(d, sess, checks)
+            day_frame = _cached_day(d) if d <= cutoff else lamp.process_day(d, sess)
         except (FileNotFoundError, requests.RequestException) as exc:
             print(f"  skipped: {exc}")
             skipped.append({"date": d.isoformat(), "reason": str(exc)})
@@ -110,18 +106,16 @@ def build_panel(start_date: date, end_date: date, checks: bool) -> dict:
             skipped.append({"date": d.isoformat(),
                             "reason": f"could not process: {type(exc).__name__}: {exc}"})
             continue
-        if failed:
-            failed_checks[d.isoformat()] = failed
-        slim.append(day_slim)
+        frames.append(day_frame)
         loaded.append(d.isoformat())
 
-    if not slim:
+    if not frames:
         raise HTTPException(404, {"message": "No data could be loaded for any date in the range.",
                                   "dates_skipped": skipped})
 
     # Aggregate all days together, as the script does, so a station-hour that
     # straddles two service dates (late-night service) is a single row.
-    panel = lamp.station_hour_panel(pd.concat(slim, ignore_index=True))
+    panel = lamp.station_hour_panel(pd.concat(frames, ignore_index=True))
 
     warnings = []
     if end_date > cutoff:
@@ -136,8 +130,6 @@ def build_panel(start_date: date, end_date: date, checks: bool) -> dict:
             "dates_requested": len(days),
             "dates_loaded": loaded,
             "dates_skipped": skipped,
-            "checks_run": checks,
-            "failed_checks": failed_checks,
             "warnings": warnings,
             "n_rows": len(panel),
             "n_stations": int(panel["parent_station"].nunique()),
@@ -162,8 +154,6 @@ StartDate = Annotated[date, Query(description="First service date (inclusive), Y
                                   examples=["2025-03-01"])]
 EndDate = Annotated[date, Query(description="Last service date (inclusive), YYYY-MM-DD",
                                 examples=["2025-03-31"])]
-Checks = Annotated[bool, Query(description="Run the verification checks for each day "
-                                           "(results appear in failed_checks)")]
 
 
 @app.get("/health")
@@ -188,16 +178,15 @@ def get_panel(
     start_date: StartDate,
     end_date: EndDate,
     fmt: Annotated[Literal["json", "csv"], Query(alias="format", description="json or csv")] = "json",
-    checks: Checks = True,
 ):
     """
     Station x local-hour delay panel for an inclusive date range.
 
-    JSON: a summary (dates loaded/skipped, failed checks, counts) plus `data`,
-    one record per (parent_station, hour_local). CSV: the same file the script
-    uploads, with the summary in X-Dates-* headers.
+    JSON: a summary (dates loaded/skipped, counts) plus `data`, one record per
+    (parent_station, hour_local). CSV: the same file the script uploads, with
+    the loaded/skipped dates in X-Dates-* headers.
     """
-    result = build_panel(start_date, end_date, checks)
+    result = build_panel(start_date, end_date)
     panel, summary = result["panel"], result["summary"]
 
     if fmt == "csv":
@@ -217,7 +206,6 @@ def get_panel(
 def upload_panel(
     start_date: StartDate,
     end_date: EndDate,
-    checks: Checks = True,
     prefix: Annotated[str, Query(description="Folder inside the bucket")] = lamp.DEFAULT_PREFIX,
 ) -> dict:
     """Build the panel and upload it to GCS at PREFIX/processed/<filename>, as the script does."""
@@ -227,7 +215,7 @@ def upload_panel(
     except (RuntimeError, FileNotFoundError, ValueError, GoogleAPIError) as exc:
         raise HTTPException(500, f"GCP setup failed: {exc}")
 
-    result = build_panel(start_date, end_date, checks)
+    result = build_panel(start_date, end_date)
     blob_name = f"{prefix.strip('/')}/processed/{result['filename']}"
     try:
         lamp.upload_bytes(bucket, blob_name, result["panel"].to_csv(index=False), "text/csv")
