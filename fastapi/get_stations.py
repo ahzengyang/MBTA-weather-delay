@@ -1,7 +1,7 @@
-"""Pull MBTA subway parent stations + coordinates from the MBTA v3 API.
+"""Grab all MBTA subway stations and latitude/longitude coordinates from the MBTA API.
 
-No API key needed at low request volume. route_type 0 = light rail (Green,
-Mattapan), 1 = heavy rail (Red, Orange, Blue).
+No API key was needed at low request volume. route_type 0 = light rail which is green and
+Mattapan. route_type 1 = heavy rail which is red, orange, and blue.
 """
 import time
 import pandas as pd
@@ -34,8 +34,6 @@ for r in routes:
     time.sleep(0.2)
 
 df = pd.DataFrame(rows)
-# A station on several branches appears once per route; collapse to one row
-# and keep the lines as a comma-joined list.
 stations = (
     df.groupby(["station_id", "station_name", "latitude", "longitude", "municipality"],
                as_index=False)
@@ -43,7 +41,7 @@ stations = (
       .sort_values("station_name")
       .reset_index(drop=True)
 )
-stations["is_underground"] = ""   # <- source 4 (Angela) fills this in
+stations["is_underground"] = ""   #wait for Angela to fill in
 stations.to_csv("stations.csv", index=False)
 print(f"{len(df)} station-route rows -> {len(stations)} distinct parent stations\n")
 print(stations[["station_name", "latitude", "longitude", "municipality", "lines"]].to_string())
