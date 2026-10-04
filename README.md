@@ -25,9 +25,9 @@ We are looking to see if major weather problems caused delays within the subway 
 ### Sources
 | # | Source & Link | Method | What it contains | Update frequency | Access requirements |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [MBTA Delays]([https://exact-url](https://performancedata.mbta.com/lamp/subway-on-time-performance-v1)) | API | One row for each hour and each station, containing the average delay of the trains within that hour | daily | none
+| 1 | [MBTA Delays](https://performancedata.mbta.com/lamp/subway-on-time-performance-v1) | API | One row for each hour and each station, containing the average delay of the trains within that hour | daily | none
 | 2 | [Weather](https://open-meteo.com/en/docs/gfs-api) | API | Hourly weather for each MBTA station (above ground specifically) based on longitude and latitude. Includes measures of temperature, precipitation (either rain OR snow), wind speed/gusts, cloud coverage, and WMO weather code. | Hourly | none |
-| 3 | [Subway Ridership]((https://gis.data.mass.gov/datasets/MassDOT::mbta-gated-station-entries)) | Website Download | The amount of entries for each gated subway station by the hour | Monthly | none |
+| 3 | [Subway Ridership](https://gis.data.mass.gov/datasets/MassDOT::mbta-gated-station-entries) | Website Download | The amount of entries for each gated subway station by the hour | Monthly | none |
 | 4 | [Subway Stations](https://www.mbta.com/developers/gtfs) | TXT File Download | Bulk schedule data in General Transit Feed Specification format about MTBA system and service. Multiple datasets which include stops.txt detailing stop id, name, longitude, latitude, searchable address, platform name, and more.  | Multiple times a month | None |
 
 Note: If we need a key, say which environment variable holds it and make sure that variable also appears in the .env_template
