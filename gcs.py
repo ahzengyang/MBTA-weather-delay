@@ -4,7 +4,7 @@ Read/write pipeline outputs in a GCS bucket.
 Environment (.env or Cloud Run env vars)
     GCP_BUCKET_NAME          bucket to write to. If unset, files go to
                              LOCAL_OUT_DIR instead (handy for local testing).
-    GCS_PREFIX               folder inside the bucket (default "ridership")
+    GCS_PREFIX               folder inside the bucket (default "mbta_gse/processed")
     GCP_PROJECT_ID           optional
     GCP_SERVICE_ACCOUNT_KEY  path to a service account JSON. If unset, uses
                              Application Default Credentials (on Cloud Run,
@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BUCKET = os.getenv("GCP_BUCKET_NAME")
-PREFIX = os.getenv("GCS_PREFIX", "ridership").strip("/")
+PREFIX = os.getenv("GCS_PREFIX", "mbta_gse/processed").strip("/")
 PROJECT = os.getenv("GCP_PROJECT_ID")
 KEY = os.getenv("GCP_SERVICE_ACCOUNT_KEY")
 LOCAL_OUT_DIR = Path(os.getenv("LOCAL_OUT_DIR", "."))
