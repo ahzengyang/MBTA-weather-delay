@@ -31,8 +31,6 @@ from weather_openmeteo import (
 BUCKET = "mbta-weather-delay"
 STATIONS_CSV = Path("stations.csv")
 DEFAULT_START = "2025-06-01"
-# A full station-range fetch is ~11,700 rows. Returning all of them as JSON is
-# megabytes per request, so the response carries a summary plus a sample.
 MAX_SAMPLE_ROWS = 24
 
 app = FastAPI(
@@ -98,10 +96,9 @@ def get_weather(
     try:
         rows = fetch_weather(
             st["latitude"], st["longitude"], start, end,
-            include_visibility=True,          # -> historical-forecast, ~2 km grid
+            include_visibility=True,          
         )
     except WeatherFetchError as exc:
-        # Upstream failed after its retries -- that is a gateway problem, not ours.
         raise HTTPException(status_code=502, detail=f"Open-Meteo: {exc}") from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -118,7 +115,6 @@ def get_weather(
     return {
         "station": st["station_name"],
         "requested_coordinates": [float(st["latitude"]), float(st["longitude"])],
-        # Open-Meteo snaps to its grid -- this is the cell the data is actually from.
         "grid_coordinates": [float(rows["latitude"].iloc[0]),
                              float(rows["longitude"].iloc[0])],
         "start": start,
@@ -136,11 +132,10 @@ def get_weather(
 def upload_to_bucket(
     bucket: str = Query(BUCKET, description="GCS bucket name"),
 ) -> dict:
-    """Push the stored database and Parquet export to Cloud Storage.
+    """Send the database and Parquet export to Cloud Storage as they were stored.
 
-    Uses Application Default Credentials -- whatever `gcloud auth` is logged in
-    as. The database is a few hundred megabytes, so this call takes tens of
-    seconds rather than returning instantly.
+    Uses default credentials, whatever `gcloud auth` is logged in
+    as. The database is a few hundred megabytes and pretty large, so this call takes some time.
     """
     parquet = PROCESSED_DIR / "weather_hourly.parquet"
     targets = [(DB_PATH, "processed/weather.db"),
