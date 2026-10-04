@@ -27,7 +27,7 @@ We are looking to see if major weather problems caused delays within the subway 
 | --- | --- | --- | --- | --- | --- |
 | 1 | [MBTA Delays]([https://exact-url](https://performancedata.mbta.com/lamp/subway-on-time-performance-v1)) | API | One row for each hour and each station, containing the average delay of the trains within that hour | daily | none
 | 2 | [Weather](https://open-meteo.com/en/docs/gfs-api) | API | Hourly weather for each MBTA station (above ground specifically) based on longitude and latitude. Includes measures of temperature, precipitation (either rain OR snow), wind speed/gusts, cloud coverage, and WMO weather code. | Hourly | none |
-| 3 | [Subway Ridership]((https://gis.data.mass.gov/datasets/MassDOT::mbta-gated-station-entries)) | Scraped | ... | ... | `robots.txt` checked DATE |
+| 3 | [Subway Ridership]((https://gis.data.mass.gov/datasets/MassDOT::mbta-gated-station-entries)) | Website Download | The amount of entries for each gated subway station by the hour | Monthly | none |
 | 4 | [Subway Stations](https://www.mbta.com/developers/gtfs) | TXT File Download | Bulk schedule data in General Transit Feed Specification format about MTBA system and service. Multiple datasets which include stops.txt detailing stop id, name, longitude, latitude, searchable address, platform name, and more.  | Multiple times a month | None |
 
 Note: If we need a key, say which environment variable holds it and make sure that variable also appears in the .env_template
@@ -47,18 +47,20 @@ Join keys: parent_station, utc_hour
 
 
 
-- Follow the direction given in the 1st assignment
-<u>Subway Stations Dataset</u>
-Join Keys: parent_station, latitude, longitude
+MBTA Delays Dataset supplies the outcome of schedule deviation per train per station per minute. Weather Dataset supplies the weather at a station at a given time. Ridership Dataset supplies the weight of how many people were impacted by the delay instead of just looking at median delay. Stations Dataset tells us if the station is open to the sky which helps us look at the effect of weather for different classifications of stations.
+  
+<ins>Subway Stations Dataset</ins>  
+Join keys: parent_station, latitude, longitude
 
-<u>MBTA Delays Dataset</u>
+<ins>MBTA Delays Dataset</ins>  
 Join keys: parent_station, hour_utc
 
-<u>Weather Dataset</u>
+<ins>Weather Dataset</ins>  
 Join keys: lat and longitude to station
 
-<u>Subway Ridership Dataset</u>
+<ins>Subway Ridership Dataset</ins>  
 Join keys: parent_station, utc_hour
+
 ---
 
 ## Setup Instructions (Locally)
@@ -66,7 +68,8 @@ Join keys: parent_station, utc_hour
 ### Prerequisites
 
 - Python 3.11+
-- A GCP service account key with access to mbta-weather-delay/mbta-weather-delay/processed/
+- A GCP service account key with access to mbta-weather-delay/mbta-weather-delay/mbta_lamp/processed/
+- Run pip install -r requirements.txt
 
 ### 1. Clone the repository
 
@@ -94,11 +97,13 @@ cp .env_template .env
 To start the API server,
 
 ```python
-fastapi run server.py
+fastapi dev mbta_lamp_api.py
 ```
 
+Example post:
+
 ```python
-requests.post("http://localhost:8000/something", json=something)
+requests.request("POST", f"{URL}/panel/upload", params={"start_date":"2025-03-01","end_date":"2025-08-01"})
 ```
 
 Make sure it writes the data in the bucket.
@@ -110,9 +115,11 @@ Make sure it writes the data in the bucket.
 ```
 MBTA-weather-delay/
 ├── fastapi/
-│   ├── main.py
+│   ├── source1_mbta_lamp_delay.py
+│   ├── mbta_lamp_api.py
+│   ├── user_definition.py
 ├── streamlit/
-│   ├── main.py
+│   ├──
 ├── .env_template
 ├── README.md
 └── requirements.txt
