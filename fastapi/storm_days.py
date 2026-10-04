@@ -1,8 +1,8 @@
 """Rank the weather events worth testing for delay effects.
 
-Weather data alone can't answer the research question, but it can say WHERE the
-signal will be. If rain and wind delay trains, it shows on these days. This is
-the handoff to source 1: pull delay data for these windows first.
+Just having weather data by itself can't answer our posed argument of weather causing delays, but it can say where the
+signal will be. If rain and wind delay trains, it will show on these selected storm days. This is
+the handoff to source 1 where they pull delay data for these windows first.
 """
 import sqlite3
 import pandas as pd
