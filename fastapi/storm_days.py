@@ -19,7 +19,6 @@ df = pd.read_sql("""
 """, conn)
 conn.close()
 
-# A simple severity score so the three hazards are comparable.
 df["severity"] = (df.snow_cm / df.snow_cm.max() * 3
                   + df.rain_hrs / df.rain_hrs.max() * 2
                   + df.peak_gust_kmh / df.peak_gust_kmh.max() * 2).round(2)
