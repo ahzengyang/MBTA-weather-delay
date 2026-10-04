@@ -1,19 +1,18 @@
-"""Fill hourly weather for every MBTA subway station since June 1st, 2025.
+"""Goal was to get weather data for every MBTA subway station since June 1st, 2025 on an hourly basis.
 
-Covers the whole subway as the MBTA defines it -- Red, Orange, Blue, the four
-Green Line branches and Mattapan -- which is 125 parent stations.
+Covers the all 125 subway stations as the MBTA defines it. That being the red line, orange line, blue line, the four
+green line branches and Mattapan.
 
-Uses the historical-forecast endpoint (~2 km grid + visibility), which covers
-2022 -> today, so the whole 2024+ window fits.
+Uses the open-meteo historical-forecast endpoint which were ~2 km grids and visibility, which covers
+2022 to today, so the whole window we are searching for fits.
 
-One request per station covers the entire range -- 24,048 hourly rows -- so
-this is ~125 requests total, well inside Open-Meteo's free limit.
+One request per station covers the entire range, which was 24,048 hourly rows.
+This made up around 125 requests total, which was inside Open-Meteo's free limit.
 
-Resumable: stations already complete in the database are skipped, so an
-interrupted run can simply be restarted.
+Stations that already in the database get skipped, allowing for any
+interrupted run to simply be restarted. (This saved me multiple times)
 
-    python backfillweather.py                       # 2024-01-01 -> yesterday
-    python backfillweather.py --start 2024-06-01    # custom window
+    python backfillweather.py                       # 2025-06-01 -> yesterday
 """
 from __future__ import annotations
 
