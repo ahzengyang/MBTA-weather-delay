@@ -1,10 +1,8 @@
 """Weather in its hour by hour windows for the worst events.
 
 storm_days.py ranks whole days. In this, for each top event it
-grabs every hour with its conditions matched, flags any peaks, and writes the
-exact time windows we should pull delay data for.
-
-Rush hour inside a blizzard is a far sharper test than a 24-hour average.
+grabs every hour with its conditions matched and writes the
+exact time windows we need to pull delay data for.
 """
 import sqlite3
 import pandas as pd
