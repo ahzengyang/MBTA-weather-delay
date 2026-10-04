@@ -1,11 +1,11 @@
 """An API script for the Open-Meteo site to collect weather.
 
 It needed a get and a post:
-
     The get: GET  /weather?station=Alewife    fetch a station from the Open-Meteo site using 
                                               latitude and longitude and store it
     The post: POST /bucket/upload             send the stored stations as a database to GCS.
                                               Due to size, we had to use a parquet.
+                                              
 `python fillweather.py` collects all 125 subway stations, but that was too big for one request.
 So it pulls one station at a time.
 
