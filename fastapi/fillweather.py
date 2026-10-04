@@ -12,7 +12,7 @@ This made up around 125 requests total, which was inside Open-Meteo's free limit
 Stations that already in the database get skipped, allowing for any
 interrupted run to simply be restarted. (This saved me multiple times)
 
-    python backfillweather.py                       # 2025-06-01 -> yesterday
+    python backfillweather.py                       - 2025-06-01 -> yesterday
 """
 from __future__ import annotations
 
