@@ -1,20 +1,19 @@
-"""HTTP interface to the Open-Meteo weather collector.
+"""An API script for the Open-Meteo site to collect weather.
 
-Two operations, matching the project's two halves:
+It needed a get and a post:
 
-    GET  /weather?station=Alewife    fetch one station from Open-Meteo and store it
-    POST /bucket/upload              push the stored database and Parquet to GCS
+    The get: GET  /weather?station=Alewife    fetch a station from the Open-Meteo site using 
+                                              latitude and longitude and store it
+    The post: POST /bucket/upload             send the stored stations as a database to GCS.
+                                              Due to size, we had to use a parquet.
+`python fillweather.py` collects all 125 subway stations, but that was too big for one request.
+So it pulls one station at a time.
 
-The batch pipeline is unchanged and remains how the full dataset is built --
-`python fillweather.py` collects all 125 stations in about six minutes, which is
-far too long to hold an HTTP connection open. This serves single-station fetches
-and the upload step.
-
+How to run:
     pip install "fastapi[standard]" google-cloud-storage
-    fastapi run api.py
+    fastapi run fastapi_weather.py
 
-Both routes call the same collection code the batch script uses, so the two
-cannot drift apart.
+The routes share the same same cod eto stay in sync.
 """
 from __future__ import annotations
 
