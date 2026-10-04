@@ -1,8 +1,8 @@
-"""Hour-level weather windows for the worst events -- the handoff to source 1.
+"""Weather in its hour by hour windows for the worst events.
 
-storm_days.py ranks whole days. This drills into them: for each top event it
-emits every hour with its conditions, flags the AM/PM peaks, and writes the
-exact UTC windows source 1 should pull delay data for.
+storm_days.py ranks whole days. In this, for each top event it
+grabs every hour with its conditions matched, flags any peaks, and writes the
+exact time windows we should pull delay data for.
 
 Rush hour inside a blizzard is a far sharper test than a 24-hour average.
 """
@@ -10,8 +10,8 @@ import sqlite3
 import pandas as pd
 
 TOP_N_DAYS = 10
-AM_PEAK = range(7, 10)      # 07:00-09:59 local
-PM_PEAK = range(16, 19)     # 16:00-18:59 local
+AM_PEAK = range(7, 10)      
+PM_PEAK = range(16, 19)     
 
 conn = sqlite3.connect("data/processed/weather.db")
 
@@ -39,13 +39,11 @@ hourly["peak"] = ""
 hourly.loc[hourly.hour_local.isin(AM_PEAK), "peak"] = "AM"
 hourly.loc[hourly.hour_local.isin(PM_PEAK), "peak"] = "PM"
 
-# An hour counts as severe if any hazard is meaningfully present.
 hourly["severe"] = ((hourly.snow_cm > 0.3) | (hourly.gust_kmh > 60)
                     | (hourly.vis_km < 1.0) | (hourly.rain_mm > 2.0))
 
 hourly.to_csv("storm_hours.csv", index=False)
 
-# The windows source 1 actually needs: severe hours during a peak.
 windows = hourly[hourly.severe & (hourly.peak != "")].copy()
 windows[["day","hour_local","utc_hour","peak","snow_cm","rain_mm","gust_kmh","vis_km"]] \
     .to_csv("priority_windows.csv", index=False)
