@@ -15,155 +15,86 @@ How to run:
 
 The routes share the same same cod eto stay in sync.
 """
-from __future__ import annotations
-
-from datetime import date, timedelta
-from pathlib import Path
-
+import os
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException
 from google.cloud import storage
+from pydantic import BaseModel
+from user_definition import *
+from weather_openmeteo import (WeatherFetchError, fetch_weather,
+                               save_processed)
 
-from weather_openmeteo import (
-    DB_PATH, PROCESSED_DIR, WeatherFetchError, fetch_weather, log, save_processed,
-)
+app = FastAPI()
 
-BUCKET = "mbta-weather-delay"
-STATIONS_CSV = Path("stations.csv")
-DEFAULT_START = "2025-06-01"
-MAX_SAMPLE_ROWS = 24
+class UploadInput(BaseModel):
+    bucket: str = bucket_name
 
-app = FastAPI(
-    title="MBTA Weather Collector",
-    description="Source 2 of the MBTA weather-delay project.",
-    version="1.0.0",
-)
-
-
-def _stations() -> pd.DataFrame:
-    if not STATIONS_CSV.exists():
-        raise HTTPException(
-            status_code=500,
-            detail=f"{STATIONS_CSV} not found -- run `python get_stations.py` first",
-        )
-    return pd.read_csv(STATIONS_CSV)
-
-
-@app.get("/health")
-def health() -> dict:
-    """Liveness check, plus whether a collected database exists yet."""
-    return {
-        "status": "ok",
-        "database_present": DB_PATH.exists(),
-        "database_mb": round(DB_PATH.stat().st_size / 1e6, 1) if DB_PATH.exists() else 0,
-    }
-
-
-@app.get("/stations")
-def list_stations() -> dict:
-    """The 125 subway parent stations the collector knows about."""
-    df = _stations()
-    return {
-        "count": len(df),
-        "stations": df[["station_id", "station_name", "latitude",
-                        "longitude", "lines"]].to_dict(orient="records"),
-    }
-
+def upload_file_to_gcs(bucket: str,
+                       file_name: str,
+                       file_path: str) -> None:
+    client = storage.Client()
+    gcs_bucket = client.bucket(bucket)
+    file = gcs_bucket.blob(file_name)
+    file.upload_from_filename(file_path)
 
 @app.get("/weather")
-def get_weather(
-    station: str = Query(..., description="Station name, e.g. Alewife"),
-    start: str = Query(DEFAULT_START, description="YYYY-MM-DD"),
-    end: str | None = Query(None, description="YYYY-MM-DD, defaults to yesterday"),
-    store: bool = Query(True, description="also write the rows into weather.db"),
-) -> dict:
-    """Fetch one station's hourly weather from Open-Meteo.
-
-    Returns a summary plus a sample of rows. The full result is written to the
-    database when `store` is true, which is where the analysis reads it from.
-    """
-    end = end or (date.today() - timedelta(days=1)).isoformat()
-
-    df = _stations()
-    match = df[df["station_name"].str.lower() == station.lower()]
-    if match.empty:
-        raise HTTPException(
-            status_code=404,
-            detail=f"unknown station {station!r} -- see GET /stations",
-        )
-    st = match.iloc[0]
+def get_weather(station: str,
+                start: str = start_date,
+                end: str = end_date):
+    stations = pd.read_csv(stations_file)
+    matched = stations[stations["station_name"].str.lower() ==
+                       station.lower()]
+    if matched.empty:
+        raise HTTPException(status_code=404,
+                            detail=f"Unknown station {station}.")
+    selected = matched.iloc[0]
 
     try:
-        rows = fetch_weather(
-            st["latitude"], st["longitude"], start, end,
-            include_visibility=True,          
-        )
-    except WeatherFetchError as exc:
-        raise HTTPException(status_code=502, detail=f"Open-Meteo: {exc}") from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    rows.insert(0, "location", st["station_name"])
-    if store:
-        save_processed(rows, write_csv=False)
-
-    sample = rows.head(MAX_SAMPLE_ROWS).copy()
-    for col in ("observed_at_utc", "observed_at_local", "ingested_at_utc"):
-        if col in sample.columns:
-            sample[col] = sample[col].astype(str)
-
-    return {
-        "station": st["station_name"],
-        "requested_coordinates": [float(st["latitude"]), float(st["longitude"])],
-        "grid_coordinates": [float(rows["latitude"].iloc[0]),
-                             float(rows["longitude"].iloc[0])],
-        "start": start,
-        "end": end,
-        "rows": len(rows),
-        "stored": bool(store),
-        "rain_hours": int(rows["is_raining"].sum()),
-        "snow_hours": int(rows["is_snowing"].sum()),
-        "freezing_precip_hours": int(rows["is_freezing_precip"].sum()),
-        "sample": sample.to_dict(orient="records"),
-    }
-
+        weather = fetch_weather(selected["latitude"],
+                                selected["longitude"],
+                                start,
+                                end,
+                                include_visibility=True)
+        weather.insert(0, "location", selected["station_name"])
+        save_processed(weather)
+    except WeatherFetchError as e:
+        raise HTTPException(status_code=502,
+                            detail=f"Could not call Open-Meteo.\
+                                    Error Message: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=400,
+                            detail=f"Was able to call Open-Meteo,\
+                                    but could not store the result.\
+                                    Error Message: {e}")
+    return {"station": selected["station_name"],
+            "start": start,
+            "end": end,
+            "rows": len(weather),
+            "rain_hours": int(weather["is_raining"].sum()),
+            "snow_hours": int(weather["is_snowing"].sum()),
+            "freezing_precip_hours": int(weather["is_freezing_precip"].sum()),
+            "message": "Successfully stored the extracted data"}
 
 @app.post("/bucket/upload")
-def upload_to_bucket(
-    bucket: str = Query(BUCKET, description="GCS bucket name"),
-) -> dict:
-    """Send the database and Parquet export to Cloud Storage as they were stored.
+def upload_to_bucket(upload_input: UploadInput):
+    if not upload_input.bucket:
+        raise HTTPException(status_code=400,
+                            detail="No bucket given. Set GCP_BUCKET_NAME in\
+                                    .env or pass bucket in the request body.")
 
-    Uses default credentials, whatever `gcloud auth` is logged in
-    as. The database is a few hundred megabytes and pretty large, so this call takes some time.
-    """
-    parquet = PROCESSED_DIR / "weather_hourly.parquet"
-    targets = [(DB_PATH, "processed/weather.db"),
-               (parquet, "processed/weather_hourly.parquet")]
-
-    missing = [str(p) for p, _ in targets if not p.exists()]
+    files = [(database_path, "processed/weather.db"),
+             (parquet_path, "processed/weather_hourly.parquet")]
+    missing = [path for path, name in files if not os.path.exists(path)]
     if missing:
-        raise HTTPException(
-            status_code=409,
-            detail=f"nothing to upload, missing: {missing} -- run the collector first",
-        )
-
+        raise HTTPException(status_code=409,
+                            detail=f"Nothing to upload, missing: {missing}.")
     try:
-        client = storage.Client()
-        blob_bucket = client.bucket(bucket)
-        uploaded = []
-        for path, key in targets:
-            blob = blob_bucket.blob(key)
-            blob.upload_from_filename(str(path))
-            uploaded.append({
-                "source": str(path),
-                "destination": f"gs://{bucket}/{key}",
-                "megabytes": round(path.stat().st_size / 1e6, 1),
-            })
-            log.info("uploaded %s -> gs://%s/%s", path, bucket, key)
-    except Exception as exc:
-        # Credentials, permissions and network all land here; surface the reason
-        # rather than a bare 500.
-        raise HTTPException(status_code=502, detail=f"GCS upload failed: {exc}") from exc
-
-    return {"bucket": bucket, "uploaded": uploaded}
+        for path, name in files:
+            upload_file_to_gcs(upload_input.bucket, name, path)
+    except Exception as e:
+        raise HTTPException(status_code=502,
+                            detail=f"Could not upload to\
+                                    {upload_input.bucket}.\
+                                    Error Message: {e}")
+    return {"message": f"weather.db and weather_hourly.parquet have been "
+                       f"uploaded to {upload_input.bucket} successfully."}
