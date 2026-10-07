@@ -6,46 +6,53 @@ Mattapan. route_type 1 = heavy rail which is red, orange, and blue.
 import time
 import pandas as pd
 import requests
+from user_definition import *
 
-BASE = "https://api-v3.mbta.com"
+def get_routes() -> list:
+    response = requests.get(f"{mbta_url}/routes",
+                            params={"filter[type]": "0,1"},
+                            timeout=30)
+    return response.json()["data"]
 
-routes = requests.get(f"{BASE}/routes", params={"filter[type]": "0,1"}, timeout=30).json()["data"]
-print(f"subway routes: {[r['id'] for r in routes]}\n")
+def get_stations(route_id: str,
+                 line_name: str) -> list:
+    response = requests.get(f"{mbta_url}/stops",
+                            params={"filter[route]": route_id,
+                                    "filter[location_type]": 1},
+                            timeout=30)
+    rows = []
+    for stop in response.json()["data"]:
+        attributes = stop["attributes"]
+        rows.append({"station_id": stop["id"],
+                     "station_name": attributes["name"],
+                     "latitude": attributes["latitude"],
+                     "longitude": attributes["longitude"],
+                     "municipality": attributes.get("municipality"),
+                     "line": line_name})
+    return rows
 
-rows = []
-for r in routes:
-    rid = r["id"]
-    line = r["attributes"]["long_name"]
-    resp = requests.get(
-        f"{BASE}/stops",
-        params={"filter[route]": rid, "filter[location_type]": 1},
-        timeout=30,
-    ).json()["data"]
-    for s in resp:
-        a = s["attributes"]
-        rows.append({
-            "station_id": s["id"],
-            "station_name": a["name"],
-            "latitude": a["latitude"],
-            "longitude": a["longitude"],
-            "municipality": a.get("municipality"),
-            "line": line,
-        })
-    time.sleep(0.2)
+if __name__ == '__main__':
+    routes = get_routes()
+    print(f"subway routes: {[route['id'] for route in routes]}")
 
-df = pd.DataFrame(rows)
-stations = (
-    df.groupby(["station_id", "station_name", "latitude", "longitude", "municipality"],
-               as_index=False)
-      .agg(lines=("line", lambda s: ", ".join(sorted(set(s)))))
-      .sort_values("station_name")
-      .reset_index(drop=True)
-)
-stations["is_underground"] = ""   #wait for Angela to fill in
-stations.to_csv("stations.csv", index=False)
-print(f"{len(df)} station-route rows -> {len(stations)} distinct parent stations\n")
-print(stations[["station_name", "latitude", "longitude", "municipality", "lines"]].to_string())
+    rows = []
+    for route in routes:
+        rows += get_stations(route["id"],
+                             route["attributes"]["long_name"])
+        time.sleep(0.2)
 
-heavy = stations[stations["lines"].str.contains("Red Line|Orange Line|Blue Line", na=False)]
-heavy.to_csv("stations_heavy_rail.csv", index=False)
-print(f"\nheavy rail only: {len(heavy)} stations -> stations_heavy_rail.csv")
+    data = pd.DataFrame(rows)
+    stations = (data.groupby(["station_id", "station_name", "latitude",
+                              "longitude", "municipality"], as_index=False)
+                .agg(lines=("line", lambda line: ", ".join(sorted(set(line)))))
+                .sort_values("station_name")
+                .reset_index(drop=True))
+    stations["is_underground"] = ""
+    stations.to_csv(stations_file, index=False)
+    print(f"{len(data)} station-route rows -> "
+          f"{len(stations)} distinct parent stations")
+
+    heavy = stations[stations["lines"].str.contains(
+        "Red Line|Orange Line|Blue Line", na=False)]
+    heavy.to_csv(heavy_rail_file, index=False)
+    print(f"heavy rail only: {len(heavy)} stations -> {heavy_rail_file}")
