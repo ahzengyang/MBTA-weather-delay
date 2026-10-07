@@ -11,98 +11,81 @@ interrupted run to simply be restarted. (This saved me multiple times)
 
     python backfillweather.py                       - 2025-06-01 -> yesterday
 """
-from __future__ import annotations
-
-import argparse
+import os
 import sqlite3
-from datetime import date, timedelta
 
 import pandas as pd
 
-from weather_openmeteo import (
-    DB_PATH, PROCESSED_DIR, WeatherFetchError, fetch_weather, log, save_processed,
-)
-
-# All 125 subway parent stations. `stations_heavy_rail.csv` still holds the 52
-# Red/Orange/Blue subset if the scope is ever narrowed again.
-STATIONS_CSV = "stations.csv"
+from user_definition import *
+from weather_openmeteo import (WeatherFetchError, fetch_weather,
+                               save_processed)
 
 
-def _already_done(expected_rows: int) -> set[str]:
+def already_done(expected_rows: int) -> set:
     """Stations with a full set of rows already stored."""
-    if not DB_PATH.exists():
+    if not os.path.exists(database_path):
         return set()
-    conn = sqlite3.connect(DB_PATH)
+    connection = sqlite3.connect(database_path)
     try:
-        rows = conn.execute(
-            "SELECT location, COUNT(*) FROM weather_hourly GROUP BY location"
-        ).fetchall()
-    except sqlite3.OperationalError:      # table not created yet
+        rows = connection.execute("SELECT location, COUNT(*) "
+                                  "FROM weather_hourly "
+                                  "GROUP BY location").fetchall()
+    except sqlite3.OperationalError:
         return set()
     finally:
-        conn.close()
-    return {loc for loc, n in rows if n >= expected_rows}
+        connection.close()
+    return {location for location, count in rows if count >= expected_rows}
+    
+
+def export_parquet() -> None:
+    connection = sqlite3.connect(database_path)
+    data = pd.read_sql("SELECT * FROM weather_hourly", connection)
+    connection.close()
+    data.to_parquet(parquet_path, index=False)
+    print(f"exported {len(data)} rows -> {parquet_path}")
 
 
-def main() -> int:
-    p = argparse.ArgumentParser(description="Back-fill MBTA station weather since 2024.")
-    p.add_argument("--start", default="2025-06-01")
-    p.add_argument("--end", default=(date.today() - timedelta(days=1)).isoformat())
-    p.add_argument("--stations-csv", default=STATIONS_CSV)
-    p.add_argument("--limit", type=int, help="only process the first N stations (testing)")
-    p.add_argument("--force", action="store_true", help="re-fetch even if already stored")
-    args = p.parse_args()
+if __name__ == '__main__':
+    stations = pd.read_csv(stations_file)
+    expected_rows = ((pd.Timestamp(end_date)
+                      - pd.Timestamp(start_date)).days + 1) * 24
+    done = already_done(expected_rows)
 
-    stations = pd.read_csv(args.stations_csv)
-    if args.limit:
-        stations = stations.head(args.limit)
-
-    expected = (pd.Timestamp(args.end) - pd.Timestamp(args.start)).days + 1
-    expected_rows = expected * 24
-    done = set() if args.force else _already_done(expected_rows)
-
-    log.info("backfill %s..%s | %d stations | %d rows each",
-             args.start, args.end, len(stations), expected_rows)
+    print(f"fill {start_date}..{end_date} | {len(stations)} stations "
+          f"| {expected_rows} rows each")
     if done:
-        log.info("skipping %d station(s) already complete", len(done))
+        print(f"skipping {len(done)} station(s) already complete")
 
-    ok, failed = 0, []
-    for i, st in enumerate(stations.itertuples(index=False), 1):
-        name = st.station_name
-        if name in done:
-            log.info("[%d/%d] %-26s skip (already complete)", i, len(stations), name)
-            ok += 1
+    stored = 0
+    failed = []
+    for number, station in enumerate(stations.itertuples(index=False), 1):
+        if station.station_name in done:
+            print(f"[{number}/{len(stations)}] {station.station_name} skip")
+            stored += 1
             continue
         try:
-            df = fetch_weather(
-                st.latitude, st.longitude, args.start, args.end,
-                include_visibility=True,          # -> historical-forecast endpoint
-            )
-            df.insert(0, "location", name)
-            save_processed(df, write_csv=False)
-            log.info("[%d/%d] %-26s %d rows", i, len(stations), name, len(df))
-            ok += 1
-        except (WeatherFetchError, ValueError):
-            log.exception("[%d/%d] %-26s FAILED", i, len(stations), name)
-            failed.append(name)
+            weather = fetch_weather(station.latitude,
+                                    station.longitude,
+                                    start_date,
+                                    end_date,
+                                    include_visibility=True)
+            weather.insert(0, "location", station.station_name)
+            save_processed(weather)
+            print(f"[{number}/{len(stations)}] {station.station_name} "
+                  f"{len(weather)} rows")
+            stored += 1
+        except (WeatherFetchError, ValueError) as e:
+            print(f"[{number}/{len(stations)}] {station.station_name} "
+                  f"FAILED {e}")
+            failed.append(station.station_name)
 
-    log.info("=== %d/%d stations stored, %d failed ===", ok, len(stations), len(failed))
+    print(f"=== {stored}/{len(stations)} stations stored, "
+          f"{len(failed)} failed ===")
     if failed:
-        log.error("failed: %s", failed)
-        log.error("re-run this script; completed stations are skipped automatically")
+        print(f"failed: {failed}")
+        print("re-run this script; completed stations are skipped")
 
-    # One Parquet export at the end. A 3M-row CSV is ~360 MB; Parquet is a
-    # fraction of that and preserves dtypes.
-    conn = sqlite3.connect(DB_PATH)
-    try:
-        out = pd.read_sql("SELECT * FROM weather_hourly", conn)
-    finally:
-        conn.close()
-    path = PROCESSED_DIR / "weather_hourly.parquet"
-    out.to_parquet(path, index=False)
-    log.info("exported %d rows -> %s", len(out), path)
-
-    return 1 if failed else 0
+    export_parquet()
 
 
 if __name__ == "__main__":
