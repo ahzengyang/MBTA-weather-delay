@@ -13,13 +13,10 @@ interrupted run to simply be restarted. (This saved me multiple times)
 """
 import os
 import sqlite3
-
 import pandas as pd
-
 from user_definition import *
 from weather_openmeteo import (WeatherFetchError, fetch_weather,
                                save_processed)
-
 
 def already_done(expected_rows: int) -> set:
     """Stations with a full set of rows already stored."""
@@ -35,7 +32,6 @@ def already_done(expected_rows: int) -> set:
     finally:
         connection.close()
     return {location for location, count in rows if count >= expected_rows}
-    
 
 def export_parquet() -> None:
     connection = sqlite3.connect(database_path)
@@ -43,7 +39,6 @@ def export_parquet() -> None:
     connection.close()
     data.to_parquet(parquet_path, index=False)
     print(f"exported {len(data)} rows -> {parquet_path}")
-
 
 if __name__ == '__main__':
     stations = pd.read_csv(stations_file)
@@ -86,7 +81,6 @@ if __name__ == '__main__':
         print("re-run this script; completed stations are skipped")
 
     export_parquet()
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
