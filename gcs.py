@@ -1,15 +1,5 @@
 """
-Read/write pipeline outputs in a GCS bucket.
-
-Environment (.env or Cloud Run env vars)
-    GCP_BUCKET_NAME          bucket to write to. If unset, files go to
-                             LOCAL_OUT_DIR instead (handy for local testing).
-    GCS_PREFIX               folder inside the bucket (default "mbta_gse/processed")
-    GCP_PROJECT_ID           optional
-    GCP_SERVICE_ACCOUNT_KEY  path to a service account JSON. If unset, uses
-                             Application Default Credentials (on Cloud Run,
-                             the service's own service account).
-    LOCAL_OUT_DIR            local fallback folder (default ".")
+Read and write  outputs into MBTA GCS bucket
 """
 
 from __future__ import annotations
