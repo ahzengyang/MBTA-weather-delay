@@ -4,7 +4,7 @@ Transform raw data from GSE website into one row per station,
 combined 30 minute interval from GSE website into 1 hour interval
 
 Drops duplicate rows (two stations serving same line, splitting ridership numbers)
-and drop ObjectId.
+and drop ObjectId from 2 million rows
 """
 
 import pandas as pd
