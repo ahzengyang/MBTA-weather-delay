@@ -19,7 +19,6 @@ KEY = os.getenv("GCP_SERVICE_ACCOUNT_KEY")
 
 
 def _bucket():
-    # no key file set: use the default credentials (gcloud login, or Cloud Run's service account)
     credentials = service_account.Credentials.from_service_account_file(KEY) if KEY else None
     client = storage.Client(project=PROJECT, credentials=credentials)
     return client.bucket(BUCKET)
