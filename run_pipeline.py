@@ -1,5 +1,5 @@
 """
-Pipeline to fetch data, clean, compare to baseline, and import into CSV
+Pipeline to fetch data, clean, compare to baseline, and import into CSV file
 """
 
 import argparse
