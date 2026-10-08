@@ -1,22 +1,15 @@
 """
-Step 1: pull raw MBTA Gated Station Entries (GSE).
+Step 1: 
+Pull MBTA Gated Station Entries from URL.
 
 Dataset: MBTA Gated Station Entries
 https://mbta-massdot.opendata.arcgis.com/datasets/001c177f07594e7c99f193dde32284c9
 
-Returns raw rows with these columns:
-    service_date (local Eastern date, naive), time_period, stop_id,
-    station_name, route_or_line, gated_entries, ObjectId
+Returns rows with columns:
+service_date (local Boston date/time), time_period, stop_id,
+station_name, route_or_line, gated_entries, ObjectId
 
-Notes
-    - service_date is stored as local midnight expressed in UTC
-      (04:00Z in EDT, 05:00Z in EST). We convert it to the Eastern date.
-    - A service day runs 03:00 -> 02:59. So the 00:00-02:59 hours of
-      calendar day D are filed under service date D-1. When you ask for
-      calendar dates, we pull service dates D-1 and D, then gse_clean
-      trims back to exactly the dates you asked for.
-    - Server max is 2000 rows/request, so we query one service date at a
-      time (~2-3k rows each) and run several in parallel.
+Converted time to EST zone, accounting for daylight saving.
 """
 
 from __future__ import annotations
