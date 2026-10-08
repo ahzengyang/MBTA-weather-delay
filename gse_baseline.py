@@ -1,9 +1,9 @@
 """
 Step 3: yearly baseline + weather-event comparison.
 
-Temprature averages are only reported in the days the stations reported data
-so station closures do not drag down temprature average.
-Weather-event dates are excluded from the baseline temprature average
+Ridership averages are only reported in the days the stations reported data
+so station closures do not drag down ridership average.
+Weather-event dates are excluded from the base ridership average
 so the normal weather average is not affected.
 """
 
