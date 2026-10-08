@@ -1,24 +1,10 @@
 """
-Step 2: clean raw GSE rows into one row per station per 30-min period.
+Step 2: 
+Transform raw data from GSE website into one row per station, 
+combined 30 minute interval from GSE website into 1 hour interval
 
-Output columns:
-    datetime       local Eastern wall-clock start of the 30-min period
-    stop_id
-    station_name
-    lines          e.g. "Blue Line, Orange Line" for transfer stations
-    gated_entries  summed across lines
-
-What it does
-    1. Drops near-duplicate re-loads (same date/period/stop/line), keeping
-       the most recent load (highest ObjectId), then drops ObjectId.
-    2. Builds `datetime` from service_date + time_period.
-       time_period is local time. MBTA's service day runs ~03:00 -> 02:59,
-       so periods 00:00-02:30 belong to the NEXT calendar morning.
-       e.g. service 2026-06-30 + (00:30:00) -> 2026-07-01 00:30
-    3. Transfer stations (State St, Park St, DTX, Gov Ctr, Haymarket,
-       North Sta, South Sta) report entries split by line as decimals that
-       add up to a whole number. We sum per station. Single-line stations
-       are unaffected (summing one row is a no-op).
+Drops duplicate rows (two stations serving same line, splitting ridership numbers)
+and drop ObjectId.
 """
 
 from __future__ import annotations
