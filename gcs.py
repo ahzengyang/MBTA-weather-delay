@@ -1,5 +1,5 @@
 """
-Read and write  outputs into MBTA GCS bucket
+Read and write outputs into MBTA GCS bucket
 """
 
 from __future__ import annotations
