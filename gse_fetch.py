@@ -1,5 +1,5 @@
 """
-Step 1: 
+Step 1:
 Pull MBTA Gated Station Entries from URL.
 
 Dataset: MBTA Gated Station Entries
@@ -12,15 +12,8 @@ station_name, route_or_line, gated_entries, ObjectId
 Converted time to EST zone, accounting for daylight saving.
 """
 
-from __future__ import annotations
-
-from concurrent.futures import ThreadPoolExecutor
-from typing import Iterable
-
 import pandas as pd
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 GSE_URL = (
     "https://services1.arcgis.com/ceiitspzDAHrdGO1/arcgis/rest/services/"
@@ -33,118 +26,83 @@ FIELDS = ["service_date", "time_period", "stop_id", "station_name",
           "route_or_line", "gated_entries", "ObjectId"]
 
 
-# ---------------------------------------------------------------- dates
-def to_dates(dates: Iterable) -> list[pd.Timestamp]:
+def to_dates(dates):
     return sorted({pd.Timestamp(d).normalize() for d in dates})
 
 
-def date_range(start: str, end: str) -> list[pd.Timestamp]:
+def date_range(start, end):
     return list(pd.date_range(start, end, freq="D"))
 
 
-def service_dates_for(calendar_dates: Iterable) -> list[pd.Timestamp]:
-    """Service dates needed to cover these calendar dates (D-1 and D)."""
-    one = pd.Timedelta(days=1)
+def service_dates_for(calendar_dates):
+    # a service day runs 3am to 3am, so calendar date D also needs service date D-1
     cal = to_dates(calendar_dates)
-    return sorted(set(cal) | {d - one for d in cal})
+    return sorted(set(cal) | {d - pd.Timedelta(days=1) for d in cal})
 
 
-# ---------------------------------------------------------------- API
-def _session() -> requests.Session:
-    s = requests.Session()
-    s.headers.update(HEADERS)
-    retry = Retry(total=5, backoff_factor=1.5,
-                  status_forcelist=(429, 500, 502, 503, 504))
-    s.mount("https://", HTTPAdapter(max_retries=retry, pool_maxsize=16))
-    return s
+def _to_local_date(utc):
+    return utc.dt.tz_convert(TZ).dt.tz_localize(None).dt.normalize()
 
 
-def _utc_ms_to_local_date(s: pd.Series) -> pd.Series:
-    return (pd.to_datetime(s, unit="ms", utc=True)
-            .dt.tz_convert(TZ).dt.tz_localize(None).dt.normalize())
-
-
-def api_date_range(session: requests.Session | None = None) -> tuple[pd.Timestamp, pd.Timestamp]:
-    """First and last service date currently published on the API."""
-    stats = ('[{"statisticType":"min","onStatisticField":"service_date","outStatisticFieldName":"lo"},'
-             '{"statisticType":"max","onStatisticField":"service_date","outStatisticFieldName":"hi"}]')
-    r = (session or _session()).get(GSE_URL, timeout=60, params={
-        "f": "json", "where": "1=1", "outStatistics": stats})
+def _api_edge_date(order):
+    r = requests.get(GSE_URL, headers=HEADERS, timeout=60, params={
+        "f": "json", "where": "1=1", "outFields": "service_date",
+        "orderByFields": f"service_date {order}", "resultRecordCount": 1})
     r.raise_for_status()
-    a = r.json()["features"][0]["attributes"]
-    lo, hi = _utc_ms_to_local_date(pd.Series([a["lo"], a["hi"]]))
-    return lo, hi
+    ms = r.json()["features"][0]["attributes"]["service_date"]
+    return _to_local_date(pd.to_datetime(pd.Series([ms]), unit="ms", utc=True))[0]
 
 
-def local_date_range(path: str) -> tuple[pd.Timestamp, pd.Timestamp]:
-    """First and last service date in a downloaded GSE.csv."""
-    s = pd.read_csv(path, encoding="utf-8-sig", usecols=["service_date"])["service_date"]
-    d = (pd.to_datetime(s, format="%Y/%m/%d %H:%M:%S%z", utc=True)
-         .dt.tz_convert(TZ).dt.tz_localize(None).dt.normalize())
-    return d.min(), d.max()
-
-
-def available_range(local: str | None = None) -> tuple[pd.Timestamp, pd.Timestamp]:
-    return local_date_range(local) if local else api_date_range()
-
-
-def _fetch_one_date(session: requests.Session, d: pd.Timestamp) -> list[dict]:
+def _fetch_one_date(d):
     lo = d.strftime("%Y-%m-%d")
     hi = (d + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
-    where = (f"service_date >= TIMESTAMP '{lo} 00:00:00' "
-             f"AND service_date < TIMESTAMP '{hi} 00:00:00'")
-    rows, offset = [], 0
+    where = f"service_date >= TIMESTAMP '{lo} 00:00:00' AND service_date < TIMESTAMP '{hi} 00:00:00'"
+    rows = []
     while True:
-        r = session.get(GSE_URL, timeout=120, params={
+        r = requests.get(GSE_URL, headers=HEADERS, timeout=120, params={
             "f": "json", "where": where, "outFields": ",".join(FIELDS),
-            "orderByFields": "ObjectId", "resultOffset": offset,
-            "resultRecordCount": PAGE, "returnGeometry": "false",
-        })
+            "orderByFields": "ObjectId", "resultOffset": len(rows),
+            "resultRecordCount": PAGE, "returnGeometry": "false"})
         r.raise_for_status()
         data = r.json()
         if "error" in data:
             raise RuntimeError(f"{lo}: {data['error']}")
-        feats = data.get("features", [])
-        rows.extend(f["attributes"] for f in feats)
-        if not feats or not data.get("exceededTransferLimit"):
+        features = data.get("features", [])
+        rows += [f["attributes"] for f in features]
+        if not features or not data.get("exceededTransferLimit"):
             return rows
-        offset += len(feats)
 
 
-def fetch_api(calendar_dates: Iterable, workers: int = 8) -> pd.DataFrame:
-    """Raw GSE rows covering the given calendar dates."""
+def fetch_api(calendar_dates):
     svc = service_dates_for(calendar_dates)
     print(f"Fetching {len(svc)} service dates from the API")
-    s = _session()
-    rows: list[dict] = []
-    with ThreadPoolExecutor(max_workers=workers) as ex:
-        for i, (d, chunk) in enumerate(zip(svc, ex.map(lambda d: _fetch_one_date(s, d), svc)), 1):
-            if not chunk:
-                print(f"  WARNING: no data for service date {d.date()}")
-            rows.extend(chunk)
-            if i % 50 == 0 or i == len(svc):
-                print(f"  {i}/{len(svc)} dates, {len(rows):,} rows")
-
+    rows = []
+    for i, d in enumerate(svc, 1):
+        rows += _fetch_one_date(d)
+        if i % 50 == 0 or i == len(svc):
+            print(f"  {i}/{len(svc)} dates, {len(rows):,} rows")
     df = pd.DataFrame(rows, columns=FIELDS)
-    df["service_date"] = _utc_ms_to_local_date(df["service_date"])
+    df["service_date"] = _to_local_date(pd.to_datetime(df["service_date"], unit="ms", utc=True))
     return df
 
 
-# ---------------------------------------------------------------- local CSV
-def load_local(path: str, calendar_dates: Iterable) -> pd.DataFrame:
-    """Same output as fetch_api, from a downloaded GSE.csv."""
-    df = pd.read_csv(path, encoding="utf-8-sig", usecols=FIELDS)
-    df["service_date"] = (
-        pd.to_datetime(df["service_date"], format="%Y/%m/%d %H:%M:%S%z", utc=True)
-        .dt.tz_convert(TZ).dt.tz_localize(None).dt.normalize()
-    )
-    svc = service_dates_for(calendar_dates)
-    missing = sorted(set(svc) - set(df["service_date"].unique()))
-    if missing:
-        print(f"WARNING: {len(missing)} service date(s) not in {path}: "
-              f"{[str(d.date()) for d in missing[:10]]}{' ...' if len(missing) > 10 else ''}")
-    return df[df["service_date"].isin(svc)].reset_index(drop=True)
+def _read_local(path, columns):
+    df = pd.read_csv(path, encoding="utf-8-sig", usecols=columns)
+    df["service_date"] = _to_local_date(
+        pd.to_datetime(df["service_date"], format="%Y/%m/%d %H:%M:%S%z", utc=True))
+    return df
 
 
-def load(calendar_dates: Iterable, local: str | None = None, workers: int = 8) -> pd.DataFrame:
-    return load_local(local, calendar_dates) if local else fetch_api(calendar_dates, workers)
+def available_range(local=None):
+    """First and last service date, from a downloaded GSE.csv or the API."""
+    if local:
+        d = _read_local(local, ["service_date"])["service_date"]
+        return d.min(), d.max()
+    return _api_edge_date("ASC"), _api_edge_date("DESC")
+
+
+def load(calendar_dates, local=None):
+    if not local:
+        return fetch_api(calendar_dates)
+    df = _read_local(local, FIELDS)
+    return df[df["service_date"].isin(service_dates_for(calendar_dates))].reset_index(drop=True)

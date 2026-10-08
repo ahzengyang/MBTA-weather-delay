@@ -7,8 +7,6 @@ Weather-event dates are excluded from the base ridership average
 so the normal weather average is not affected.
 """
 
-from __future__ import annotations
-
 import pandas as pd
 
 from gse_clean import _longest

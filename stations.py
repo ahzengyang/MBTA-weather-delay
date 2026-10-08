@@ -2,7 +2,7 @@
 Full 69 gated MBTA stations in this project
 """
 
-STOP_IDS = frozenset({
+STOP_IDS = {
     "place-aport",  # Airport
     "place-alfcl",  # Alewife
     "place-andrw",  # Andrew
@@ -72,4 +72,4 @@ STOP_IDS = frozenset({
     "place-wlsta",  # Wollaston
     "place-wondl",  # Wonderland
     "place-wimnl",  # Wood Island
-})
+}

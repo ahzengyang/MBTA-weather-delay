@@ -7,8 +7,6 @@ Drops duplicate rows (two stations serving same line, splitting ridership number
 and drop ObjectId.
 """
 
-from __future__ import annotations
-
 import pandas as pd
 
 KEY = ["service_date", "time_period", "stop_id", "route_or_line"]
