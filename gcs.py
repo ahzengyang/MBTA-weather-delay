@@ -1,5 +1,5 @@
 """
-Read and write outputs into MBTA GCS bucket
+Read and write csv outputs into MBTA GCS bucket
 """
 
 import io
