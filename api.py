@@ -1,30 +1,10 @@
 """
-FastAPI wrapper around run_pipeline.py (source 3: MBTA gated station entries).
+FastAPI for run_pipeline.py
+source 3: MBTA gated station entries
 
-Run:
-    fastapi run api.py            # or: fastapi dev api.py
+Run: fastapi run api.py   or fastapi dev api.py
 
-Endpoints:
-    POST /ridership/refresh               re-run the pipeline, write CSVs to GCS
-        body (all optional):
-            {"dates": ["2026-01-26", ...],    default: storm_days.csv
-             "baseline_start": "2025-08-01",  default: 365 days before baseline_end
-             "baseline_end": "2026-07-31"}    default: last published service date
-    GET  /ridership/event-vs-baseline     daily total vs baseline, per station per event date
-    GET  /ridership/hourly-all            hourly entries for every day in the window,
-                                          with an event_day flag (~500k rows; filter it)
-        filters (all GETs):
-            ?date=2026-01-26
-            &station=place-pktrm          stop_id or station name
-            &line=Red Line                matches transfer stations too
-            &hour=8                       (hourly-all) 0-23, local time
-            &start=2026-01-01&end=2026-01-31   (hourly-all) date range, inclusive
-            &event_day=true               (hourly-all) storm days only / false: other days
-            &format=csv                   CSV download instead of JSON
-
-A refresh pulls ~366 service dates from ArcGIS and takes a few minutes, so
-deploy with a longer request timeout (e.g. gcloud run deploy --timeout=900).
-GETs read the last refresh's CSVs from the bucket. Storage settings: gcs.py.
+A refresh pulls 366 service dates from ArcGIS but may take a few minutes
 """
 
 from __future__ import annotations
