@@ -1,34 +1,5 @@
 """
-GSE pipeline: fetch -> clean -> baseline -> CSVs
-
-Weather-event dates come from storm_days.csv ('day' column, Alex's
-severe-weather days) by default. Override with --dates-file or --dates.
-Event dates the GSE data doesn't cover (it lags a month or two) are
-dropped with a warning.
-
-Baseline defaults to the 365 days ending on the last published service
-date, so it moves forward as new data is published. Event dates are
-excluded from it.
-
-Only the 69 stations in stations.py are kept.
-
-Usage
-    python run_pipeline.py                        # events from storm_days.csv, API
-    python run_pipeline.py --local GSE.csv        # same, but read GSE.csv instead of the API
-    python run_pipeline.py --dates-file other.csv
-    python run_pipeline.py --dates 2025-07-14 2026-01-25
-    python run_pipeline.py --upload               # also write to the GCS bucket (see gcs.py)
-
-The same pipeline is served over HTTP by api.py.
-
-Outputs (in --out-dir, default current folder)
-    GSE_event_vs_baseline.csv   per station per event date: daily total vs
-                                the same-day-type yearly average
-    GSE_hourly_all.csv          hourly entries per station for every day in
-                                the baseline window plus event dates, with an
-                                event_day flag. For joining with delays and
-                                weather on stop_id + hour. Hours with no row
-                                had no recorded entries (closed / no data).
+Pipeline to fetch data, clean, compare to baseline, and import into CSV
 """
 
 from __future__ import annotations
