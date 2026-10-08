@@ -9,7 +9,7 @@ Returns rows with columns:
 service_date (local Boston date/time), time_period, stop_id,
 station_name, route_or_line, gated_entries, ObjectId
 
-Converted time to EST zone, accounting for daylight saving.
+Converted time to EST zone, accounting for daylight savings in november.
 """
 
 import pandas as pd
