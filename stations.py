@@ -1,12 +1,5 @@
 """
-The 69 stations this project covers.
-
-These are the gated stations in GSE that also appear in the team's station
-file (source 4, GTFS stops). GSE's other two stations, Courthouse and World
-Trade Center, are Silver Line (bus rapid transit) and aren't in source 4.
-
-Join on stop_id, not names: a few names differ between sources
-(e.g. GSE "State Street" vs "State", "Science Park" vs "Science Park/West End").
+Full 69 gated MBTA stations in this project
 """
 
 STOP_IDS = frozenset({
