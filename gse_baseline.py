@@ -1,25 +1,10 @@
 """
 Step 3: yearly baseline + weather-event comparison.
 
-baseline(daily)  -> one row per station:
-    stop_id, station_name, lines,
-    avg_daily_all       mean entries per day over the baseline year
-    avg_daily_weekday   mean over Mon-Fri
-    avg_daily_weekend   mean over Sat-Sun
-    days_counted        days the station had any data
-
-    Averages only count days the station reported data, so closures
-    (e.g. shuttle diversions) don't drag the average down.
-    Weather-event dates are excluded from the baseline so storms don't
-    pull the "normal" average toward themselves.
-
-compare(event_daily, baseline) -> one row per station per event date:
-    date, day_type, stop_id, station_name, lines, daily_entries,
-    avg_daily_all, baseline_same_day_type, pct_vs_baseline
-
-    pct_vs_baseline compares against the same day type
-    (a storm Saturday vs an average weekend day), since weekday
-    ridership is ~3x weekend ridership.
+Temprature averages are only reported in the days the stations reported data
+so station closures do not drag down temprature average.
+Weather-event dates are excluded from the baseline temprature average
+so the normal weather average is not affected.
 """
 
 from __future__ import annotations
