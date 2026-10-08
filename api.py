@@ -2,7 +2,7 @@
 FastAPI for run_pipeline.py
 source 3: MBTA gated station entries
 
-Run: fastapi run api.py   or fastapi dev api.py
+Run: fastapi run api.py or fastapi dev api.py
 
 A refresh pulls 366 service dates from ArcGIS but may take a few minutes
 """
