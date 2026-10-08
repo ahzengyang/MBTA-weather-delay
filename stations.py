@@ -1,5 +1,5 @@
 """
-Full 69 gated MBTA stations in this project
+Full 69 gated MBTA subway stations 
 """
 
 STOP_IDS = {
