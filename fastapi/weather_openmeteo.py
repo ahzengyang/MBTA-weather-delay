@@ -24,6 +24,7 @@ import requests
 from user_definition import *
 
 class WeatherFetchError(Exception):
+    """Raised when a request fails permanently or exhausts its retries."""
 
 
 def backoff(attempt: int) -> float:
