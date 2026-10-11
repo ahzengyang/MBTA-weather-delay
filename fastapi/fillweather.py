@@ -81,6 +81,3 @@ if __name__ == '__main__':
         print("re-run this script; completed stations are skipped")
 
     export_parquet()
-
-if __name__ == "__main__":
-    raise SystemExit(main())
