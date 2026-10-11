@@ -25,6 +25,7 @@ from user_definition import *
 
 class WeatherFetchError(Exception):
 
+
 def backoff(attempt: int) -> float:
     return min(2 ** attempt, 60) + random.uniform(0, 1)
 
