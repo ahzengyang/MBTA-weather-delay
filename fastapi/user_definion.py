@@ -33,7 +33,7 @@ storm_hours_file = "storm_hours.csv"
 priority_windows_file = "priority_windows.csv"
 
 start_date = "2025-06-01"
-end_date = (date.today() - timedelta(days=1)).isoformat()
+end_date = "2026-09-30"
 
 max_retries = 5
 timeout_seconds = 60
