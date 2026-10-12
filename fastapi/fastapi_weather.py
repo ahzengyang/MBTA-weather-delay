@@ -82,8 +82,8 @@ def upload_to_bucket(upload_input: UploadInput):
                             detail="No bucket given. Set GCP_BUCKET_NAME in\
                                     .env or pass bucket in the request body.")
 
-    files = [(database_path, "processed/weather.db"),
-             (parquet_path, "processed/weather_hourly.parquet")]
+    files = [(database_path, f"{gcs_processed_prefix}/weather.db"),
+             (parquet_path, f"{gcs_processed_prefix}/weather_hourly.parquet")]
     missing = [path for path, name in files if not os.path.exists(path)]
     if missing:
         raise HTTPException(status_code=409,
