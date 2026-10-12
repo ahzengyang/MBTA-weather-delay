@@ -39,7 +39,8 @@ def get_raw_csv(url: str, file: str):
     return df# .to_csv(index=False).encode("utf-8")
 
 """
-Function to upload data file to GCS bucket, from bytes to csv file format 
+Function to upload data file to GCS bucket, from bytes to csv file format ??
+Change - upload data file to gcs bucket from pandas df to csv file format
 """
 def upload_to_gcs(data: bytes, bucket_name: str, blob_path: str):
     try:
