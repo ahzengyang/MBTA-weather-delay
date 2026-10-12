@@ -1,5 +1,6 @@
 """
-Full 69 gated MBTA subway stations 
+Full 69 gated MBTA subway stations
+These stations appear in source 3 (GSE ridership data) and source 4 (from angela)
 """
 
 STOP_IDS = {
