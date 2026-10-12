@@ -31,6 +31,8 @@ heavy_rail_file = "stations_heavy_rail.csv"
 storm_days_file = "storm_days.csv"
 storm_hours_file = "storm_hours.csv"
 priority_windows_file = "priority_windows.csv"
+gcs_processed_prefix = "weather/processed"
+gcs_raw_prefix = "weather/raw"
 
 start_date = "2025-06-01"
 end_date = "2026-09-30"
