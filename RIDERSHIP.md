@@ -1,3 +1,44 @@
+Before the meeting (one time, about 10 minutes)
+
+You need access to the `mbta-weather-delay` bucket. If you don't use a key file, log in once with `gcloud auth application-default login`. To see what's in the bucket now, run the `gcloud storage ls` command in Step 4.
+
+Run a full refresh beforehand so the demo doesn't sit waiting on a download:
+
+```bash
+cd ~/Desktop/USF/Fall/data_acq/mbta && source .venv/bin/activate
+python run_pipeline.py --upload
+```
+
+This pulls live data from MBTA's ArcGIS API, about 730 days of data. It takes a while, and it's the only way to pick up the storm days after June 2026. If you're short on time, `python run_pipeline.py --local GSE.csv --upload` is much faster, but it skips the 5 storm days from July–September 2026.
+
+The live demo
+
+Step 1. Start the API.
+
+```bash
+fastapi dev api.py
+```
+
+Step 2. Open the docs page. Go to http://127.0.0.1:8000/docs. FastAPI builds this page for you: every endpoint has a "Try it out" button, so you can demo without writing any code.
+
+Step 3. Show the three GET endpoints, from rawest to most processed.
+
+| Call | What to say |
+|---|---|
+| `/ridership/raw?date=2026-02-23&station=Airport` | "This is exactly what MBTA publishes: 30-minute gate counts." |
+| `/ridership/hourly-all?date=2026-02-23&station=Airport` | "We clean it into hourly counts per station. This is the table you join with delays and weather." |
+| `/ridership/event-vs-baseline?date=2026-02-23` | "This is the result: ridership on the Feb 23 snowstorm compared to a normal weekday." |
+
+Step 4. Show the bucket. Open the GCS console, or run:
+
+```bash
+gcloud storage ls "gs://mbta-weather-delay/mbta_gse/**"
+```
+
+Don't click `POST /ridership/refresh` during the demo. It re-runs the whole pipeline and takes minutes. Just explain what it does.
+
+---
+
 This shows how many riders were at each station at hour,
 to show how weather events affect ridership.
 
