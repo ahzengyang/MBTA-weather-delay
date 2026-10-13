@@ -1,6 +1,4 @@
-Before the meeting (one time, about 10 minutes)
-
-You need access to the `mbta-weather-delay` bucket. If you don't use a key file, log in once with `gcloud auth application-default login`. To see what's in the bucket now, run the `gcloud storage ls` command in Step 4.
+Will need access to the `mbta-weather-delay` bucket. If you don't use a key file, log in once with `gcloud auth application-default login`. To see what's in the bucket now, run the `gcloud storage ls` command in Step 4.
 
 Run a full refresh beforehand so the demo doesn't sit waiting on a download:
 
