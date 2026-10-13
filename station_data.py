@@ -3,13 +3,10 @@ Python script to download MBTA GTFS feed, extract datasets about subway stations
 data cleaning and transforming, then upload to GCS as CSV file format.
 
 Run directly:
-
     python station_data.py
 
 Config info (URLs, GCS info) comes from user_definition.py.
-FIX FUNCTIONS
 """
-
 import io
 import zipfile
 import pandas as pd
@@ -35,19 +32,20 @@ def get_raw_csv(url: str, file: str) -> pd.DataFrame:
     resp.raise_for_status()
     with zipfile.ZipFile(io.BytesIO(resp.content)) as z, z.open(file) as f:
         df = pd.read_csv(f, dtype=str, na_filter=False)
-    return df# .to_csv(index=False).encode("utf-8")
+    return df
 
 """
-Function to upload data file to GCS bucket, from bytes to csv file format ??
-Change - upload data file to gcs bucket from pandas df to csv file format
+Function to upload data file to gcs bucket from pandas df to csv file format
 """
-def upload_to_gcs(data: bytes, bucket_name: str, blob_path: str):
+def upload_to_gcs(data: pd.DataFrame, service_account_file_path: str,
+                  project_id: str, bucket_name: str, blob_path:str):
     try:
         credentials = service_account.Credentials.from_service_account_file(
             service_account_file_path)
         client = storage.Client(project_id, credentials)
         blob = client.bucket(bucket_name).blob(blob_path)
-        blob.upload_from_string(data, content_type="text/csv")
+
+        blob.upload_from_string(data.to_csv(index=False).encode("utf-8"), content_type="text/csv")
         print(f"Uploaded to gs://{bucket_name}/{blob_path}")
     except Exception as e:
         print(f"Error uploading to cloud: {e}")
@@ -100,34 +98,17 @@ def process_subway_stations(stops_df: pd.DataFrame, underground_flags: pd.Series
     return output_df[keep_columns]
 
 if __name__ == "__main__":
-    """
-    - Extract raw data
-    - Process stops.txt, collapse rows into unique stations
-    - Process levels.txt to extract us_underground flag
-    - Left join stops and levels for final processed dataset
-    """
-    # raw dfs
+    # Data acquisition
     stops = get_raw_csv(mbta_gtfs_url, "stops.txt")
     levels = get_raw_csv(mbta_gtfs_url, "levels.txt")
 
-    # data transformations
+    # Data transformation
     underground_flags = get_underground_flags(stops, levels)
     processed_stops_df = process_subway_stations(stops, underground_flags)
-    
-    """
-    Upload processed file into gcs
-    """
 
-    #final_data_bytes = processed_stops_df.to_csv(index=False).encode("utf-8")
-    #upload_to_gcs(final_data_bytes, bucket_name, f"station_processed/{station_data_file_name}_final2")
-
-    """ Other """
-    #data = filter_station_variables(data_bytes)
-    #print(get_underground_flags(stops, levels))
-    #upload_to_gcs(stops.to_csv(index=False).encode("utf-8"), bucket_name, f"station_raw/{station_data_file_name}")
-    #upload_to_gcs(levels.to_csv(index=False).encode("utf-8"), bucket_name, f"station_raw/{level_data_file_name}")
-    #print(processed_stops_df)
-    
+    # Data upload to gcs
+    upload_to_gcs(processed_stops_df, service_account_file_path, project_id,
+                  bucket_name, f"station_processed/{station_data_file_name}_final")
         
 
 
