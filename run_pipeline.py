@@ -19,10 +19,23 @@ VS_FILE = "GSE_event_vs_baseline.csv"
 HOURLY_ALL_FILE = "GSE_hourly_all.csv"
 HOURLY_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 VS_DATE_FORMAT = "%Y-%m-%d"
+RAW_DATE_FORMAT = "%Y-%m-%d"
 
 
 def read_dates_file(path):
     return to_dates(pd.read_csv(path)["day"])
+
+
+def raw_file(month):
+    """Raw rows are split into one file per service month, e.g. GSE_raw_2026-02.csv"""
+    return f"GSE_raw_{month}.csv"
+
+
+def save_raw(raw):
+    """Upload the raw rows to the raw folder in GCS, one CSV per month."""
+    months = raw["service_date"].dt.strftime("%Y-%m")
+    return [gcs.save_csv(part, raw_file(m), RAW_DATE_FORMAT, gcs.RAW_PREFIX)
+            for m, part in raw.groupby(months)]
 
 
 def run(events, local=None):
@@ -51,8 +64,7 @@ def run(events, local=None):
     wanted = sorted(set(events) | set(base_days))
     raw = load(wanted, local)
     print(f"Raw rows: {len(raw):,}")
-    raw = raw[raw["stop_id"].isin(STOP_IDS)]
-    all_clean = clean(raw, wanted)
+    all_clean = clean(raw[raw["stop_id"].isin(STOP_IDS)], wanted)
     day = all_clean["datetime"].dt.normalize()
 
     event_clean = all_clean[day.isin(events)]
@@ -65,6 +77,7 @@ def run(events, local=None):
     return {
         "vs_baseline": compare(daily_totals(event_clean), base),
         "hourly_all": hourly_all,
+        "raw": raw,
         "event_dates": events,
         "dropped_dates": dropped,
         "baseline_start": start,
@@ -87,3 +100,5 @@ if __name__ == "__main__":
     if args.upload:
         print("Uploaded to", gcs.save_csv(res["vs_baseline"], VS_FILE, VS_DATE_FORMAT))
         print("Uploaded to", gcs.save_csv(res["hourly_all"], HOURLY_ALL_FILE, HOURLY_DATE_FORMAT))
+        raw_files = save_raw(res["raw"])
+        print(f"Uploaded {len(raw_files)} raw monthly files to gs://{gcs.BUCKET}/{gcs.RAW_PREFIX}/")
