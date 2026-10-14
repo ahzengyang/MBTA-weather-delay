@@ -3,7 +3,7 @@ Step 2:
 Turn raw GSE rows (30 minute periods, one row per station per line)
 into one row per station per hour.
 
-Keeps only the stations in stations.py, drops duplicate rows, and merges
+Refers to stations.py, drops duplicate rows, and merges
 transfer stations (e.g. Park St Red + Green) into one row.
 """
 
