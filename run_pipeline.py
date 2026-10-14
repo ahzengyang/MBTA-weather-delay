@@ -1,5 +1,5 @@
 """
-Pipeline to fetch GSE data, turn it into hourly entries per station, and save to CSV
+Pipeline to fetch GSE data, turn it into hourly entries per station, and save to CSV (before GCS)
 """
 
 import argparse
