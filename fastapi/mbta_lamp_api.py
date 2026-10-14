@@ -1,31 +1,18 @@
-#!/usr/bin/env python3
+
 """
-mbta_lamp_api.py
-================
-
-FastAPI service for the MBTA LAMP station x hour delay panel. Every number it
-returns is produced by source1_mbta_lamp_delay.py (same fetch, same derivation,
-same exclusions, same aggregation), so a range requested here matches the CSV
-the script uploads for that range.
-
 Endpoints
 ---------
 GET  /panel?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD[&format=csv]
-     The panel for an inclusive date range, as JSON (default) or CSV.
+     Gets panel for a date range (default is JSON, can be CSV)
 POST /panel/upload?start_date=...&end_date=...
-     Builds the same panel and uploads it to GCS, exactly like the script.
-GET  /dates      Service dates LAMP has published (from index.csv).
-GET  /health     Liveness check.
+     Builds panel and uploads to GCP
+GET  /dates - Service dates LAMP has published (from index.csv).
+GET  /health
 
-Interactive docs: http://127.0.0.1:8000/docs
+To Run: fastapi dev mbta_lamp_api.py
 
-Run (from the folder holding this file, source1_mbta_lamp_delay.py and
-user_definition.py):
 
-    pip install fastapi uvicorn
-    uvicorn mbta_lamp_api:app --reload
-
-Settings (environment variables, optional)
+Optional environment variables
     MBTA_API_MAX_RANGE_DAYS  longest range one request may ask for (default 500)
     MBTA_API_CACHE_DAYS      processed days kept in memory (default 62)
 """
@@ -59,9 +46,7 @@ app = FastAPI(
 )
 
 
-# --------------------------------------------------------------------------- #
-# Panel construction (wraps the script's own functions)
-# --------------------------------------------------------------------------- #
+# Construct Panel
 def _complete_cutoff() -> date:
     """Dates after this may still be growing on LAMP's side."""
     return datetime.now(ZoneInfo(lamp.LOCAL_TZ)).date() - timedelta(days=MIN_AGE_DAYS)
@@ -147,9 +132,7 @@ def _panel_records(panel: pd.DataFrame) -> list[dict]:
     return json.loads(out.to_json(orient="records", double_precision=15))
 
 
-# --------------------------------------------------------------------------- #
 # Endpoints
-# --------------------------------------------------------------------------- #
 StartDate = Annotated[date, Query(description="First service date (inclusive), YYYY-MM-DD",
                                   examples=["2025-03-01"])]
 EndDate = Annotated[date, Query(description="Last service date (inclusive), YYYY-MM-DD",
