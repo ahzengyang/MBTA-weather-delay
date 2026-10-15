@@ -15,7 +15,8 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import date, datetime, timedelta
+import tarfile
+from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
@@ -366,6 +367,80 @@ def _filter(df, station, line, line_col):
     if line:
         df = df[df[line_col].str.contains(line, case=False, regex=False)]
     return df
+
+
+def daily_frame(target: str) -> pd.DataFrame:
+    """Every station for one service date, shaped like the stored table."""
+    stations = pd.read_csv(stations_file)
+    frames = []
+    for station in stations.itertuples(index=False):
+        weather = fetch_weather(station.latitude,
+                                station.longitude,
+                                target,
+                                target,
+                                include_visibility=True)
+        weather.insert(0, "location", station.station_name)
+        frames.append(weather)
+
+    data = pd.concat(frames, ignore_index=True)
+    data["ingested_at_utc"] = datetime.now(timezone.utc).isoformat()
+    for column in ("observed_at_utc", "observed_at_local"):
+        data[column] = data[column].apply(
+            lambda value: value.isoformat() if pd.notna(value) else None)
+    for column in flag_columns:
+        data[column] = data[column].astype(int)
+    return data.reindex(columns=table_columns)
+
+
+@app.post("/weather/daily")
+def collect_daily(day: str | None = None,
+                  bucket: str = bucket_name):
+    """Collect one day for every station and write it straight to GCS."""
+    if not bucket:
+        raise HTTPException(status_code=400,
+                            detail="No bucket given. Set GCP_BUCKET_NAME in\
+                                    .env or pass bucket in the query.")
+
+    target = day or (datetime.now(timezone.utc).date()
+                     - timedelta(days=1)).isoformat()
+    os.makedirs(raw_directory, exist_ok=True)
+    os.makedirs(processed_directory, exist_ok=True)
+    before = set(os.listdir(raw_directory))
+
+    try:
+        data = daily_frame(target)
+    except (WeatherFetchError, ValueError) as e:
+        raise HTTPException(status_code=502,
+                            detail=f"Could not collect {target}.\
+                                    Error Message: {e}")
+
+    collected = sorted(set(os.listdir(raw_directory)) - before)
+    parquet_file = f"{processed_directory}/weather_{target}.parquet"
+    raw_path = f"{raw_directory}/weather_raw_{target}.tar"
+    data.to_parquet(parquet_file, index=False)
+    with tarfile.open(raw_path, "w") as archive:
+        for name in collected:
+            archive.add(f"{raw_directory}/{name}", arcname=name)
+
+    processed_name = f"{gcs_processed_prefix}/daily/weather_{target}.parquet"
+    raw_name = f"{gcs_raw_prefix}/weather_raw_{target}.tar"
+    try:
+        upload_file_to_gcs(bucket, processed_name, parquet_file)
+        upload_file_to_gcs(bucket, raw_name, raw_path)
+    except Exception as e:
+        raise HTTPException(status_code=502,
+                            detail=f"Could not upload {target} to {bucket}.\
+                                    Error Message: {e}")
+
+    return {"date": target,
+            "stations": int(data["location"].nunique()),
+            "rows": len(data),
+            "rain_hours": int(data["is_raining"].sum()),
+            "snow_hours": int(data["is_snowing"].sum()),
+            "freezing_precip_hours": int(data["is_freezing_precip"].sum()),
+            "processed": f"gs://{bucket}/{processed_name}",
+            "raw": f"gs://{bucket}/{raw_name}",
+            "message": "Successfully stored the extracted data"}
 
 
 @app.post("/ridership/refresh")
