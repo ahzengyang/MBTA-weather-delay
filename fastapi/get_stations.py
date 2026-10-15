@@ -47,7 +47,6 @@ if __name__ == '__main__':
                 .agg(lines=("line", lambda line: ", ".join(sorted(set(line)))))
                 .sort_values("station_name")
                 .reset_index(drop=True))
-    stations["is_underground"] = ""
     stations.to_csv(stations_file, index=False)
     print(f"{len(data)} station-route rows -> "
           f"{len(stations)} distinct parent stations")
