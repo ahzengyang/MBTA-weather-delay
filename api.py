@@ -17,6 +17,9 @@ from run_pipeline import HOURLY_DATE_FORMAT, HOURLY_FILE, RAW_DATE_FORMAT, raw_f
 
 app = FastAPI()
 
+START = "2025-01-01"
+END = "2026-06-30"
+
 
 def _day(date):
     try:
