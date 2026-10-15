@@ -1,173 +1,285 @@
 #!/usr/bin/env bash
-# =====================================================================
-# HW3 -- Cloud Run deployment script (FILL IN THE BLANKS)
 #
-# This script deploys your containers to Cloud Run in five steps:
-#   1. Store the service account key in Secret Manager
-#   2. Deploy the FastAPI service
-#   3. Read back the FastAPI service's public URL
-#   4. Deploy the Streamlit service, pointed at that URL
-#   5. Create a Cloud Scheduler job that calls the API every midnight
+# gcloud_command.sh — deploy and schedule this project on GCP.
 #
-# YOUR JOB:
-#   a) Fill in TODO 1-5 in config.sh, which this script sources below.
-#   b) Replace every FILL_IN_<n> token in this file (TODO 6-14). Each
-#      one has a numbered comment above it saying what belongs there.
+#   ./gcloud_command.sh all        # everything, in order (first-time setup)
+#   ./gcloud_command.sh bootstrap  # enable APIs, upload your key to Secret Manager
+#   ./gcloud_command.sh api        # redeploy the API only
+#   ./gcloud_command.sh web        # redeploy the web app only
+#   ./gcloud_command.sh scheduler  # (re)create the Cloud Scheduler jobs only
+#   ./gcloud_command.sh urls       # print the deployed URLs
 #
-# Nothing else needs to change.
-#
-# Run it from this directory:
-#   bash gcloud_command.sh
-# =====================================================================
+# This deploys straight from source with `gcloud run deploy --source`, the
+# same way HW3 did.
+
 set -euo pipefail
 
-# =====================================================================
-# CONFIGURATION
+# Run from the script's own directory so the relative paths below resolve
+# the same way no matter where you invoke it from.
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+# ─── CONFIG ───────────────────────────────────────────────────────────────────
+PROJECT_ID="mbta-weather-delay"         # GCP project ID (not the display name)
+REGION="us-west1"                       # keep the same region everywhere;
+                                        # the GCS bucket is already us-west1
+
+API_SERVICE="mbta-weather-api"          # Cloud Run service name for the API
+WEB_SERVICE="mbta-weather-dashboard"    # Cloud Run service name for Streamlit
+
+API_DIR="./api"                         # folder holding the API Dockerfile
+WEB_DIR="./streamlit"                   # folder holding the Streamlit Dockerfile
+
+API_PORT=8000                           # must match EXPOSE/CMD in api/Dockerfile
+WEB_PORT=8501                           # Streamlit default
+
+# The key goes to Secret Manager and is mounted at runtime, and .env is read by
+# gcloud at deploy time.
 #
-# PROJECT_ID, REGION, ENV_FILE, LOCAL_KEY_FILE, the ports, the service names 
-# are defined in config.sh, which you fill in separately. 
-# `source` runs that file in this shell to set them.
+# .env is dotenv format (KEY=value) because python-dotenv reads it locally.
+# `gcloud --env-vars-file` wants YAML, so env_yaml() converts it at deploy time
+# rather than making anyone maintain two copies.
+ENV_FILE=".env"
+LOCAL_KEY_FILE="${LOCAL_KEY_FILE:-$HOME/.ssh/mbta-weather-delay-d8fdc30c97c0.json}"
+
+# The code reads GCP_SERVICE_ACCOUNT_KEY as a file path and mounts it.
+# station_data.upload_to_gcs() calls from_service_account_file() with no
+# fallback, so this mount is required, not optional.
+GCP_KEY_SECRET="mbta-weather-gcp-key"
+SECRET_MOUNT_PATH="/run/secrets/gcp_key"
+
+# ─── Scheduler jobs ───────────────────────────────────────────────────────────
+# One job per data source. Format, pipe-delimited:
 #
-# test_hw3.sh sources the same file.
+#   name | endpoint | cron | request body
 #
-# IMPORTANT : Do not redefine any of those values here.
-# =====================================================================
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-source "$SCRIPT_DIR/config.sh"
-
-gcloud config set project "$PROJECT_ID"
-gcloud config set run/region "$REGION"
-
-# =====================================================================
-# STEP 1 -- put the service account key in Secret Manager.
+# Endpoints are the real POST routes in the API. Query params go in the
+# endpoint string.
 #
-# CloudRun mounts it from Secret Manager at runtime.
-# =====================================================================
-gcloud services enable secretmanager.googleapis.com
-
-# create secrets if it does not exist.
-if ! gcloud secrets describe "$GCP_KEY_SECRET" >/dev/null 2>&1; then
-  gcloud secrets create "$GCP_KEY_SECRET" --replication-policy=automatic
-fi
-
-# Add a new version of secret.
-gcloud secrets versions add "$GCP_KEY_SECRET" --data-file="$LOCAL_KEY_FILE"
-
-# Cloud Run source deploys run as the service account.
-# Without secretAccessor on the secret, --set-secrets grants this.
-PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" \
-  --format="value(projectNumber)")
-gcloud secrets add-iam-policy-binding "$GCP_KEY_SECRET" \
-  --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
-  --role=roles/secretmanager.secretAccessor
-
-# =====================================================================
-# STEP 2 -- deploy the FastAPI service.
+# Cadences match how often each source actually changes:
+#   stations   yearly   -- GTFS stop definitions are relatively static
+#   delays     daily    -- LAMP publishes on a lag; MIN_AGE_DAYS=2 means
+#                          anything newer may still be growing
+#   ridership  monthly  -- gated entry counts republish in monthly batches
 #
-# '--source <dir>' tells Cloud Run to build the Dockerfile in that
-# directory with Cloud Build, push the image, and deploy it. 
-# =====================================================================
-# TODO 6: which directory holds the FastAPI Dockerfile?
-# TODO 7: which configuration variable holds the FastAPI port?
-# TODO 8: which configuration variable holds the path to your .env file?
-gcloud run deploy "$API_SERVICE" \
-  --source "$SCRIPT_DIR/fastapi" \
-  --region "$REGION" \
-  --port="$API_PORT" \
-  --allow-unauthenticated \
-  --env-vars-file="$ENV_FILE" \
-  --set-secrets="$SECRET_MOUNT_PATH=$GCP_KEY_SECRET:latest" \
-  --memory=2Gi \
-  --cpu=2 \
-  --timeout=3600
+# NOT scheduled yet:
+#   weather    /weather is a GET that writes to the container's local disk and
+#              /weather/upload pushes those files to GCS. Cloud Run's disk is
+#              ephemeral, so the upload finds nothing. Needs one POST that
+#              fetches all stations and writes straight to GCS.
+#   transform  endpoint does not exist yet.
+SCHEDULER_TZ="America/New_York"         # the data is Boston local time
 
-# --env-vars-file just loaded GCP_SERVICE_ACCOUNT_KEY as the path on YOUR
-# laptop, which does not exist inside the container. 
-#
-# TODO 9: which configuration variable holds the in-container path of
-#          the mounted key?
-gcloud run services update "$API_SERVICE" \
-  --region "$REGION" \
-  --update-env-vars=GCP_SERVICE_ACCOUNT_KEY="$SECRET_MOUNT_PATH"
+# TODO(delays): /delays/panel/upload requires start_date and end_date with no
+# defaults, so this window is pinned and re-uploads the same panel daily. Give
+# the endpoint defaults (it already computes complete_through) and drop the
+# query string.
+DELAYS_START="2025-08-01"
+DELAYS_END="2026-07-31"
 
-# =====================================================================
-# STEP 3 -- read back the API server's public URL (provided).
-#
-# A Cloud Run service answers on two hostnames: the
-# SERVICE-PROJECTNUMBER.REGION.run.app form that 'gcloud run deploy'
-# prints as "Service URL", and a SERVICE-HASH-uc.a.run.app alias.
-# Both reach the same service, but status.url returns the alias --
-# 'urls[0]' is the one the deploy output and the Cloud Console show.
-# =====================================================================
-API_SERVER_URL=$(gcloud run services describe "$API_SERVICE" \
-  --region "$REGION" --format="value(urls[0])")
-# Older gcloud releases don't expose 'urls'; fall back to the alias.
-if [ -z "$API_SERVER_URL" ]; then
-  API_SERVER_URL=$(gcloud run services describe "$API_SERVICE" \
-    --region "$REGION" --format="value(status.url)")
-fi
-# Without this check an empty URL silently propagates into the webapp's
-# API_SERVICE_URL and the scheduler's --uri, which would cause errors.
-if [ -z "$API_SERVER_URL" ]; then
-  echo "ERROR: could not resolve the URL for Cloud Run service" \
-       "'$API_SERVICE' in $REGION." >&2
+SCHEDULE_SPECS="
+stations|/stations/upload|0 4 1 1 *|{}
+delays|/delays/panel/upload?start_date=${DELAYS_START}&end_date=${DELAYS_END}|30 6 * * *|{}
+ridership|/ridership/refresh|0 7 1 * *|{}
+"
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── validation ──────────────────────────────────────────────────────────────
+for _var in PROJECT_ID REGION API_SERVICE WEB_SERVICE API_DIR WEB_DIR \
+            API_PORT WEB_PORT ENV_FILE LOCAL_KEY_FILE GCP_KEY_SECRET \
+            SECRET_MOUNT_PATH SCHEDULER_TZ SCHEDULE_SPECS; do
+  if [ -z "${!_var}" ]; then
+    echo "ERROR: $_var is empty -- fill in the CONFIG block at the top of" \
+         "this script before running it." >&2
+    exit 1
+  fi
+done
+unset _var
+
+if [ ! -f "$ENV_FILE" ]; then
+  echo "ERROR: ENV_FILE '$ENV_FILE' does not exist." \
+       "Copy .env_template to .env and fill it in." >&2
   exit 1
 fi
-echo "$API_SERVICE deployed at $API_SERVER_URL"
-
-# =====================================================================
-# STEP 4 -- deploy the Streamlit service, pointed at the API server.
-# =====================================================================
-# TODO 10: which directory holds the Streamlit Dockerfile?
-# TODO 11: which configuration variable holds the Streamlit port?
-gcloud run deploy "$WEBAPP_SERVICE" \
-  --source "$SCRIPT_DIR/streamlit" \
-  --region "$REGION" \
-  --port="$WEBAPP_PORT" \
-  --allow-unauthenticated \
-  --env-vars-file="$ENV_FILE" \
-  --set-secrets="$SECRET_MOUNT_PATH=$GCP_KEY_SECRET:latest"
-
-# TODO 12: streamlit/user_definition.py exposes API_SERVICE_URL, so the
-#          dashboard container gets the API server's address too. Which
-#          shell variable set in STEP 3 holds that URL?
-#          DO NOT HARDCODE. Cloud Run only assigns the URL once the
-#          service exists, which is why STEP 3 reads it back.
-gcloud run services update "$WEBAPP_SERVICE" \
-  --region "$REGION" \
-  --update-env-vars=GCP_SERVICE_ACCOUNT_KEY="$SECRET_MOUNT_PATH",API_SERVICE_URL="$API_SERVER_URL"
-
-WEBAPP_URL=$(gcloud run services describe "$WEBAPP_SERVICE" \
-  --region "$REGION" --format="value(urls[0])")
-echo "$WEBAPP_SERVICE deployed at $WEBAPP_URL"
-
-# =====================================================================
-# STEP 5 -- schedule the daily search.
-#
-# Cloud Scheduler sends an HTTP POST to the API server's URL on a scheule.
-# =====================================================================
-# create or update based on whether the job already exists.
-if gcloud scheduler jobs describe "$SCHEDULER_JOB" \
-     --location="$REGION" >/dev/null 2>&1; then
-  SCHEDULER_ACTION=update
-else
-  SCHEDULER_ACTION=create
+if [ ! -f "$LOCAL_KEY_FILE" ]; then
+  echo "ERROR: LOCAL_KEY_FILE '$LOCAL_KEY_FILE' does not exist." >&2
+  echo "       Your key is probably at a different path. Run as:" >&2
+  echo "         LOCAL_KEY_FILE=~/path/to/key.json $0 $*" >&2
+  exit 1
 fi
+for _dir in "$API_DIR" "$WEB_DIR"; do
+  if [ ! -f "$_dir/Dockerfile" ]; then
+    echo "ERROR: no Dockerfile in '$_dir'." >&2
+    exit 1
+  fi
+done
+unset _dir
 
-# TODO 13: the full URL Cloud Scheduler should POST to. 
-#          Combine the API server's URL with the endpoint in
-#          fastapi/extract_save_data.py
-gcloud scheduler jobs "$SCHEDULER_ACTION" http "$SCHEDULER_JOB" \
-  --location="$REGION" \
-  --schedule="$SCHEDULE" \
-  --uri="${API_SERVER_URL}${SEARCH_PATH}" \
-  --http-method=POST \
-  --headers="Content-Type=application/json" \
-  --message-body="$MESSAGE_BODY" \
-  --attempt-deadline=1800s
+log() { printf '\n\033[1;32m==> %s\033[0m\n' "$*"; }
 
-echo
-echo "Done."
-echo "  API:       $API_SERVER_URL"
-echo "  Dashboard: $WEBAPP_URL"
-echo "  Scheduler: $SCHEDULER_JOB ($SCHEDULE)"
+# ─── .env (dotenv) -> YAML for --env-vars-file ───────────────────────────────
+# python-dotenv reads KEY=value; gcloud reads KEY: value. Convert on the fly.
+# Values are emitted quoted, so colons and spaces inside them are safe.
+ENV_YAML=""
+env_yaml() {
+  if [ -z "$ENV_YAML" ]; then
+    ENV_YAML=$(mktemp)
+    trap 'rm -f "$ENV_YAML"' EXIT
+    awk '
+      /^[[:space:]]*#/ { next }                  # comment lines
+      /^[[:space:]]*$/ { next }                  # blank lines
+      /^[A-Za-z_][A-Za-z0-9_]*=/ {
+        eq = index($0, "=")
+        key = substr($0, 1, eq - 1)
+        val = substr($0, eq + 1)
+        gsub(/^["\x27]|["\x27]$/, "", val)       # strip surrounding quotes
+        gsub(/"/, "\\\"", val)                   # escape inner quotes
+        printf "%s: \"%s\"\n", key, val
+      }
+    ' "$ENV_FILE" > "$ENV_YAML"
+  fi
+  echo "$ENV_YAML"
+}
+
+# ─── one-time project setup ──────────────────────────────────────────────────
+bootstrap() {
+  gcloud config set project "$PROJECT_ID"
+  gcloud config set run/region "$REGION"
+  gcloud services enable \
+    run.googleapis.com \
+    cloudbuild.googleapis.com \
+    artifactregistry.googleapis.com \
+    cloudscheduler.googleapis.com \
+    secretmanager.googleapis.com \
+    storage.googleapis.com
+
+  log "Storing the service account key in Secret Manager as '${GCP_KEY_SECRET}'"
+  if ! gcloud secrets describe "$GCP_KEY_SECRET" >/dev/null 2>&1; then
+    gcloud secrets create "$GCP_KEY_SECRET" --replication-policy=automatic
+  fi
+  gcloud secrets versions add "$GCP_KEY_SECRET" --data-file="$LOCAL_KEY_FILE"
+
+  log "Letting the Cloud Run runtime service account read that secret"
+  local project_number
+  project_number=$(gcloud projects describe "$PROJECT_ID" \
+    --format="value(projectNumber)")
+  gcloud secrets add-iam-policy-binding "$GCP_KEY_SECRET" \
+    --member="serviceAccount:${project_number}-compute@developer.gserviceaccount.com" \
+    --role=roles/secretmanager.secretAccessor
+}
+
+# ─── API service ─────────────────────────────────────────────────────────────
+deploy_api() {
+  log "Deploying ${API_SERVICE} from ${API_DIR} (Cloud Build builds the image)"
+  gcloud run deploy "$API_SERVICE" \
+    --source "$API_DIR" \
+    --region "$REGION" \
+    --port="$API_PORT" \
+    --allow-unauthenticated \
+    --timeout=900 \
+    --memory=2Gi \
+    --max-instances=1 \
+    --env-vars-file="$(env_yaml)" \
+    --set-secrets="$SECRET_MOUNT_PATH=$GCP_KEY_SECRET:latest"
+
+  # .env points GCP_SERVICE_ACCOUNT_KEY at a path on your laptop.
+  gcloud run services update "$API_SERVICE" \
+    --region "$REGION" \
+    --update-env-vars=GCP_SERVICE_ACCOUNT_KEY="$SECRET_MOUNT_PATH"
+}
+
+api_url() {
+  local url
+  url=$(gcloud run services describe "$API_SERVICE" \
+    --region "$REGION" --format="value(urls[0])")
+  if [ -z "$url" ]; then
+    url=$(gcloud run services describe "$API_SERVICE" \
+      --region "$REGION" --format="value(status.url)")
+  fi
+  if [ -z "$url" ]; then
+    echo "ERROR: could not resolve the URL for Cloud Run service" \
+         "'$API_SERVICE' in $REGION. Deploy it first." >&2
+    exit 1
+  fi
+  echo "$url"
+}
+
+# ─── Web app ─────────────────────────────────────────────────────────────────
+deploy_web() {
+  local url; url="$(api_url)"
+
+  log "Deploying ${WEB_SERVICE} from ${WEB_DIR}, pointing at ${url}"
+  gcloud run deploy "$WEB_SERVICE" \
+    --source "$WEB_DIR" \
+    --region "$REGION" \
+    --port="$WEB_PORT" \
+    --allow-unauthenticated \
+    --max-instances=1 \
+    --session-affinity \
+    --memory=2Gi \
+    --env-vars-file="$(env_yaml)" \
+    --set-secrets="$SECRET_MOUNT_PATH=$GCP_KEY_SECRET:latest"
+
+  # API_SERVICE_URL is only discoverable after the API is deployed.
+  gcloud run services update "$WEB_SERVICE" \
+    --region "$REGION" \
+    --update-env-vars=GCP_SERVICE_ACCOUNT_KEY="$SECRET_MOUNT_PATH",API_SERVICE_URL="$url"
+}
+
+# ─── Cloud Scheduler ─────────────────────────────────────────────────────────
+deploy_scheduler() {
+  local url; url="$(api_url)"
+
+  # gcloud reads stdin, so each call inside the loop gets </dev/null. Without
+  # it the first call swallows the rest of SCHEDULE_SPECS and only one job is
+  # created, silently.
+  while IFS='|' read -r job_name endpoint cron body; do
+    [ -z "${job_name// /}" ] && continue
+
+    local action=create
+    if gcloud scheduler jobs describe "$job_name" \
+         --location="$REGION" >/dev/null 2>&1 </dev/null; then
+      action=update
+    fi
+
+    log "Running '${action}' on scheduler job '${job_name}' (${cron} ${SCHEDULER_TZ})"
+    gcloud scheduler jobs "$action" http "$job_name" \
+      --location="$REGION" \
+      --schedule="$cron" \
+      --time-zone="$SCHEDULER_TZ" \
+      --uri="${url}${endpoint}" \
+      --http-method=POST \
+      --headers="Content-Type=application/json" \
+      --message-body="$body" \
+      --attempt-deadline=1800s \
+      </dev/null
+
+    # Monthly and yearly jobs would otherwise not fire until long after the
+    # deadline, leaving empty prefixes in GCS and no execution history.
+    log "Triggering '${job_name}' once so you can confirm it works"
+    gcloud scheduler jobs run "$job_name" --location="$REGION" </dev/null
+  done <<< "$SCHEDULE_SPECS"
+
+  echo
+  echo "Check the results with:"
+  echo "  gcloud run services logs read ${API_SERVICE} --region=${REGION} --limit=50"
+}
+
+show_urls() {
+  echo "API     : $(api_url)"
+  echo "API docs: $(api_url)/docs"
+  echo "Web app : $(gcloud run services describe "$WEB_SERVICE" \
+    --region "$REGION" --format='value(status.url)')"
+}
+
+# ─── entry point ─────────────────────────────────────────────────────────────
+case "${1:-all}" in
+  all)       bootstrap; deploy_api; deploy_web; deploy_scheduler; show_urls ;;
+  bootstrap) bootstrap ;;
+  api)       deploy_api ;;
+  web)       deploy_web ;;
+  scheduler) deploy_scheduler ;;
+  urls)      show_urls ;;
+  *) echo "usage: $0 {all|bootstrap|api|web|scheduler|urls}" >&2; exit 1 ;;
+esac
+
+log "Done."
