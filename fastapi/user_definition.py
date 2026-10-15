@@ -3,8 +3,12 @@ from datetime import date, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
+project_id = os.getenv('GCP_PROJECT_ID')
 bucket_name = os.getenv('GCP_BUCKET_NAME')
+service_account_file_path = os.getenv('GCP_SERVICE_ACCOUNT_KEY')
+
 mbta_url = "https://api-v3.mbta.com"
+mbta_gtfs_url = "https://cdn.mbta.com/MBTA_GTFS.zip"
 archive_url = "https://archive-api.open-meteo.com/v1/archive"
 historical_forecast_url = ("https://historical-forecast-api.open-meteo.com"
                            "/v1/forecast")
@@ -26,6 +30,7 @@ raw_directory = "data/raw/weather"
 processed_directory = "data/processed"
 database_path = "data/processed/weather.db"
 parquet_path = "data/processed/weather_hourly.parquet"
+station_data_file_name = 'station_data_file'
 stations_file = "stations.csv"
 heavy_rail_file = "stations_heavy_rail.csv"
 storm_days_file = "storm_days.csv"
@@ -44,8 +49,3 @@ retryable_status = {408, 425, 429, 500, 502, 503, 504}
 top_n_days = 10
 am_peak = range(7, 10)
 pm_peak = range(16, 19)
-
-project_id = os.getenv("GCP_PROJECT_ID")
-service_account_file_path = os.getenv("GCP_SERVICE_ACCOUNT_KEY")
-mbta_gtfs_url = "https://cdn.mbta.com/MBTA_GTFS.zip"
-station_data_file_name = "station_data_file"
