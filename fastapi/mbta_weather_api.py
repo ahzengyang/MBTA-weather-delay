@@ -33,8 +33,10 @@ import source1_mbta_lamp_delay as lamp
 import station_data
 from run_pipeline import (HOURLY_DATE_FORMAT, HOURLY_FILE, RAW_DATE_FORMAT,
                           raw_file, run, save_raw)
-from weather_openmeteo import (WeatherFetchError, fetch_weather,
-                               save_processed)
+from weather_openmeteo import (WeatherFetchError, database_path, end_date,
+                               fetch_weather, gcs_processed_prefix,
+                               parquet_path, save_processed, start_date,
+                               stations_file)
 from user_definition import *
 
 MAX_RANGE_DAYS = int(os.getenv("MBTA_API_MAX_RANGE_DAYS", "500"))
