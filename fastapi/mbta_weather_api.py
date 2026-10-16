@@ -1,15 +1,16 @@
-"""A combined file for all four of the team's API data sources endpoints (station_api.py, mbta_lamp_api.py, fastapi_weather.py, and api.py in MBTA delay data
+"""Combined file of all API endpoints for our group project. This includes station_api.py, mbta_lamp_api.py, fastapi_weather.py, and api.py for
+the MBTA delay project.
 
-Each source hs some sort of identifying factor from its old .py file:
-- /stations came from "station_api.py"
-- /delays came from "mbta_lamp_api.py"
-- /weather came from "fastapi_weather.py"
-- /ridership came from "api.py"
+Each source had an identifying factor included to reference its old .py file. So:
+- /stations is the station_api.py
+- /delays is the mbta_lamp_api.py
+- /weather is the fastapi_weather.py
+- /ridership is the api.py
 
-To run, use command: fastapi run mbta_weather_api.py
+Have user_definition.py, station_data.py, source1_mbta_lamp_delay.py, weather_openmeteo.py, run_pipeline.py, gcs.py, gse_fetch.py, gse_clean.py
+and stations.py
 
-Make sure to have the following files ready: user_definition.py, station_data.py, source1_mbta_lamp_delay.py, weather_openmeteo.py, run_pipeline.py, 
-gcs.py, gse_fetch.py, gse_clean.py, stations.py
+Run command is $fastapi run mbta_weather_api.py
 """
 from __future__ import annotations
 
