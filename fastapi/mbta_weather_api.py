@@ -40,6 +40,10 @@ from fastapi_functions.user_definition import *
 MAX_RANGE_DAYS = int(os.getenv("MBTA_API_MAX_RANGE_DAYS", "500"))
 CACHE_DAYS = int(os.getenv("MBTA_API_CACHE_DAYS", "62"))
 MIN_AGE_DAYS = 2
+# Days per scheduled panel upload. Panels accumulate in GCS and
+# combine_sources concatenates them, so this only needs to exceed the
+# number of new service dates between runs.
+PANEL_WINDOW_DAYS = int(os.getenv("MBTA_API_PANEL_WINDOW_DAYS", "7"))
 
 app = FastAPI(
     title="MBTA Weather Delay API",
@@ -245,13 +249,53 @@ def get_panel(
     return {**summary, "columns": list(panel.columns), "data": _panel_records(panel)}
 
 
+OptionalStartDate = Annotated[date | None,
+                              Query(description="First service date (inclusive), YYYY-MM-DD. "
+                                                "Defaults to PANEL_WINDOW_DAYS before end_date.",
+                                    examples=["2025-08-01"])]
+OptionalEndDate = Annotated[date | None,
+                            Query(description="Last service date (inclusive), YYYY-MM-DD. "
+                                              "Defaults to the latest complete service date.",
+                                  examples=["2026-07-31"])]
+
+
+def _default_panel_range(start_date: date | None,
+                         end_date: date | None) -> tuple[date, date]:
+    """Fill in a date range for an unparameterised scheduled run.
+
+    Cloud Scheduler sends a fixed URI, so a job with hardcoded dates would
+    re-upload the same window forever. Defaulting end_date to the latest
+    complete service date makes the daily job pick up new data on its own.
+
+    The window is deliberately short: _cached_day holds CACHE_DAYS days, so
+    rebuilding a year every morning would re-fetch almost all of it from LAMP.
+    Panels accumulate in GCS instead and combine_sources reads them all.
+    """
+    if end_date is None:
+        cutoff = _complete_cutoff()
+        try:
+            published = lamp.list_service_dates()
+            end_date = min(published[-1], cutoff)
+        except (requests.RequestException, RuntimeError):
+            end_date = cutoff
+    if start_date is None:
+        start_date = end_date - timedelta(days=PANEL_WINDOW_DAYS - 1)
+    return start_date, end_date
+
+
 @app.post("/delays/panel/upload")
 def upload_panel(
-    start_date: StartDate,
-    end_date: EndDate,
+    start_date: OptionalStartDate = None,
+    end_date: OptionalEndDate = None,
     prefix: Annotated[str, Query(description="Folder inside the bucket")] = lamp.DEFAULT_PREFIX,
 ) -> dict:
-    """Build the panel and upload it to GCS at PREFIX/processed/<filename>, as the script does."""
+    """Build the panel and upload it to GCS at PREFIX/processed/<filename>, as the script does.
+
+    With no dates, uploads the last PANEL_WINDOW_DAYS complete service dates --
+    this is what the daily Cloud Scheduler job calls. Pass explicit dates for a
+    backfill.
+    """
+    start_date, end_date = _default_panel_range(start_date, end_date)
     try:
         lamp.check_gcp_config()
         bucket = lamp.get_bucket()

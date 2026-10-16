@@ -23,6 +23,10 @@ import pandas as pd
 # Object names inside the GCS bucket
 STATION_BLOB = "station_processed/station_data_file"
 WEATHER_BLOB = "weather/processed/weather_hourly.parquet"
+# /weather/daily writes one parquet per day here. Both are read and
+# concatenated; prep_weather() deduplicates on (location, hour) keeping the
+# newest ingested_at_utc, so overlap between the two is handled.
+WEATHER_DAILY_PREFIX = "weather/processed/daily/"
 RIDERSHIP_BLOB = "mbta_gse/processed/GSE_hourly_all.csv"
 DELAYS_PREFIX = "mbta_lamp/processed/mbta_station_hour_panel_"
 COMBINED_BLOB = "combined_data/combined_data.csv"
@@ -268,6 +272,26 @@ def get_bucket():
     return client.bucket(bucket_name)
 
 
+def all_panels(blob_names):
+    """Every delays panel, oldest end date first.
+
+    The daily scheduler job uploads a short rolling panel while the backfill
+    uploads a long one. Taking only the most recent end date would throw away
+    the history, so every panel is read and concatenated instead.
+    """
+    panels = []
+    for name in blob_names:
+        m = _PANEL_RE.search(name)
+        if not m:
+            continue
+        end = pd.Timestamp(m.group(2) or m.group(1))
+        panels.append((end, name))
+    if not panels:
+        raise FileNotFoundError(f"No files matching {_PANEL_RE.pattern} under {DELAYS_PREFIX}")
+    panels.sort(key=lambda p: p[0].value)
+    return [name for _, name in panels]
+
+
 def pick_latest_panel(blob_names):
     """
     From a list of object names, return the delays panel with the latest end
@@ -319,7 +343,10 @@ def load_sources_from_gcs(bucket=None, station_blob = STATION_BLOB, sources = No
     bucket = bucket or get_bucket()
 
     station_name = resolve_blob_name(bucket, station_blob)
-    delays_name = pick_latest_panel(b.name for b in bucket.list_blobs(prefix=DELAYS_PREFIX))
+    panel_names = all_panels(b.name for b in bucket.list_blobs(prefix=DELAYS_PREFIX))
+    weather_names = [WEATHER_BLOB] + sorted(
+        b.name for b in bucket.list_blobs(prefix=WEATHER_DAILY_PREFIX)
+        if b.name.endswith(".parquet"))
 
     def load(label, name, **kwargs):
         df = read_blob(bucket, name, **kwargs)
@@ -328,12 +355,40 @@ def load_sources_from_gcs(bucket=None, station_blob = STATION_BLOB, sources = No
         print(f"  {label:<10} gs://{bucket.name}/{name}  ({len(df):,} rows)")
         return df
 
+    def load_many(label, names, dedupe_on, **kwargs):
+        """Concatenate several objects, newest-wins on dedupe_on.
+
+        `names` must be oldest first; a missing object is skipped rather than
+        fatal, so a daily partition deleted by hand does not break the run.
+        """
+        frames = []
+        for name in names:
+            try:
+                frames.append(read_blob(bucket, name, **kwargs))
+            except Exception as exc:
+                print(f"  {label:<10} skipped {name}: {type(exc).__name__}: {exc}")
+        if not frames:
+            raise FileNotFoundError(f"No readable {label} objects: {names}")
+        df = pd.concat(frames, ignore_index=True)
+        before = len(df)
+        if dedupe_on and all(c in df.columns for c in dedupe_on):
+            df = df.drop_duplicates(subset=dedupe_on, keep="last").reset_index(drop=True)
+        if sources is not None:
+            sources[label] = f"{len(frames)} object(s), latest {names[-1]}"
+        print(f"  {label:<10} {len(frames)} object(s)  ({before:,} rows -> "
+              f"{len(df):,} after dedupe)")
+        return df
+
     print("Loaded files from GCS:")
     station_data = load("station", station_name, low_memory=False,
                         dtype={"stop_id": str, "parent_station": str})
-    weather_hourly = load("weather", WEATHER_BLOB)
+    # Canonical first, daily partitions after, so a later run wins on dedupe.
+    weather_hourly = load_many("weather", weather_names, dedupe_on=None)
     ridership = load("ridership", RIDERSHIP_BLOB, dtype={"stop_id": str})
-    delays = load("delays", delays_name, dtype={"parent_station": str})
+    # Panels overlap; the one with the later end date was computed later.
+    delays = load_many("delays", panel_names,
+                       dedupe_on=["parent_station", "hour_utc"],
+                       dtype={"parent_station": str})
     return delays, station_data, weather_hourly, ridership
 
 

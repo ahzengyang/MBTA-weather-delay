@@ -57,29 +57,22 @@ SECRET_MOUNT_PATH="/run/secrets/gcp_key"
 #
 # Cadences match how often each source actually changes:
 #   stations   yearly   -- GTFS stop definitions are relatively static
+#   weather    daily    -- /weather/daily writes yesterday to weather/processed/daily/
 #   delays     daily    -- LAMP publishes on a lag; MIN_AGE_DAYS=2 means
-#                          anything newer may still be growing
+#                          anything newer may still be growing. With no dates,
+#                          the endpoint uploads the last PANEL_WINDOW_DAYS.
 #   ridership  monthly  -- gated entry counts republish in monthly batches
+#   combined   daily    -- runs after the daily sources have landed
 #
-# NOT scheduled yet:
-#   weather    /weather is a GET that writes to the container's local disk and
-#              /weather/upload pushes those files to GCS. Cloud Run's disk is
-#              ephemeral, so the upload finds nothing. Needs one POST that
-#              fetches all stations and writes straight to GCS.
-#   transform  endpoint does not exist yet.
+# /weather/refresh overwrites the whole weather table; never schedule it.
 SCHEDULER_TZ="America/New_York"         # the data is Boston local time
-
-# TODO(delays): /delays/panel/upload requires start_date and end_date with no
-# defaults, so this window is pinned and re-uploads the same panel daily. Give
-# the endpoint defaults (it already computes complete_through) and drop the
-# query string.
-DELAYS_START="2025-08-01"
-DELAYS_END="2026-07-31"
 
 SCHEDULE_SPECS="
 stations|/stations/upload|0 4 1 1 *|{}
-delays|/delays/panel/upload?start_date=${DELAYS_START}&end_date=${DELAYS_END}|30 6 * * *|{}
+weather|/weather/daily|0 5 * * *|{}
+delays|/delays/panel/upload|30 6 * * *|{}
 ridership|/ridership/refresh|0 7 1 * *|{}
+combined|/combined/refresh|15 7 * * *|{}
 "
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -119,26 +112,23 @@ log() { printf '\n\033[1;32m==> %s\033[0m\n' "$*"; }
 # ─── .env (dotenv) -> YAML for --env-vars-file ───────────────────────────────
 # python-dotenv reads KEY=value; gcloud reads KEY: value. Convert on the fly.
 # Values are emitted quoted, so colons and spaces inside them are safe.
-ENV_YAML=""
-env_yaml() {
-  if [ -z "$ENV_YAML" ]; then
-    ENV_YAML=$(mktemp)
-    trap 'rm -f "$ENV_YAML"' EXIT
-    awk '
-      /^[[:space:]]*#/ { next }                  # comment lines
-      /^[[:space:]]*$/ { next }                  # blank lines
-      /^[A-Za-z_][A-Za-z0-9_]*=/ {
-        eq = index($0, "=")
-        key = substr($0, 1, eq - 1)
-        val = substr($0, eq + 1)
-        gsub(/^["\x27]|["\x27]$/, "", val)       # strip surrounding quotes
-        gsub(/"/, "\\\"", val)                   # escape inner quotes
-        printf "%s: \"%s\"\n", key, val
-      }
-    ' "$ENV_FILE" > "$ENV_YAML"
-  fi
-  echo "$ENV_YAML"
-}
+# Built once here, not inside env_yaml(): callers use $(env_yaml), which runs
+# in a subshell, and an EXIT trap set there would delete the file on return.
+ENV_YAML=$(mktemp)
+trap 'rm -f "$ENV_YAML"' EXIT
+awk '
+  /^[[:space:]]*#/ { next }                  # comment lines
+  /^[[:space:]]*$/ { next }                  # blank lines
+  /^[A-Za-z_][A-Za-z0-9_]*=/ {
+    eq = index($0, "=")
+    key = substr($0, 1, eq - 1)
+    val = substr($0, eq + 1)
+    gsub(/^["\x27]|["\x27]$/, "", val)       # strip surrounding quotes
+    gsub(/"/, "\\\"", val)                   # escape inner quotes
+    printf "%s: \"%s\"\n", key, val
+  }
+' "$ENV_FILE" > "$ENV_YAML"
+env_yaml() { echo "$ENV_YAML"; }
 
 # ─── one-time project setup ──────────────────────────────────────────────────
 bootstrap() {
@@ -176,7 +166,7 @@ deploy_api() {
     --port="$API_PORT" \
     --allow-unauthenticated \
     --timeout=900 \
-    --memory=2Gi \
+    --memory=4Gi \
     --max-instances=1 \
     --env-vars-file="$(env_yaml)" \
     --set-secrets="$SECRET_MOUNT_PATH=$GCP_KEY_SECRET:latest"
