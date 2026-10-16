@@ -1,13 +1,6 @@
 """
-Step 1:
-Pull MBTA Gated Station Entries from URL.
-
-Dataset: MBTA Gated Station Entries
+Step 1: Pull MBTA Gated Station Entries from URL Gated entries: 
 https://mbta-massdot.opendata.arcgis.com/datasets/001c177f07594e7c99f193dde32284c9
-
-Returns rows with columns:
-service_date (local Boston date/time), time_period, stop_id,
-station_name, route_or_line, gated_entries, ObjectId
 
 Converted time to EST zone, accounting for daylight savings in november.
 """

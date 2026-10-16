@@ -12,7 +12,6 @@ The combined dataframe is uploaded to the bukcet at combined_data/combined_data.
 
 How to run: python combine_sources.py
 """
-
 import io
 import re
 

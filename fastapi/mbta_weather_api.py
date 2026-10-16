@@ -1,10 +1,5 @@
-"""A combined file for all four of the team's API data sources endpoints (station_api.py, mbta_lamp_api.py, fastapi_weather.py, and api.py in MBTA delay data
-
-Each source hs some sort of identifying factor from its old .py file:
-- /stations came from "station_api.py"
-- /delays came from "mbta_lamp_api.py"
-- /weather came from "fastapi_weather.py"
-- /ridership came from "api.py"
+"""A combined file for all four of the team's API data sources endpoints (station_api.py, mbta_lamp_api.py, 
+fastapi_weather.py, and api.py in MBTA delay data
 
 To run, use command: fastapi run mbta_weather_api.py
 

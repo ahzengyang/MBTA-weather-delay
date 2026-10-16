@@ -1,5 +1,4 @@
-"""
-Step 2:
+"""Step 2:
 Turn raw GSE rows (30 minute periods, one row per station per line)
 into one row per station per hour.
 

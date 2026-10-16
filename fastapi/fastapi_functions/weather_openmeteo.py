@@ -1,16 +1,5 @@
 """
 Open-Meteo historical hourly weather for Boston (API)
-
-Two endpoints:
-
-  Archive (default)  https://archive-api.open-meteo.com/v1/archive
-      1940 to ~ yesterday. On roughly a ~25 km grid with no visibility variables.
-
-  Historical Forceast https://historical-forecast-api.open-meteo.com/v1/forecast
-      2022 to today. On roughly a ~2 km grid and includes visibility. 
-
-Both take start_date and end_date, so we can request exactly the dates our delay 
-data covers.
 """
 import gzip
 import io
