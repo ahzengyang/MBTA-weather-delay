@@ -1,5 +1,0 @@
-GCP_PROJECT_ID=mbta-weather-delay
-GCP_BUCKET_NAME=mbta-weather-delay
-GCP_SERVICE_ACCOUNT_KEY=
-GCS_PREFIX=mbta_gse/processed
-GCS_RAW_PREFIX=mbta_gse/raw

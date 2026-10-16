@@ -21,29 +21,19 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 PROJECT_ID="mbta-weather-delay"         # GCP project ID (not the display name)
 REGION="us-west1"                       # keep the same region everywhere;
-                                        # the GCS bucket is already us-west1
 
 API_SERVICE="mbta-weather-api"          # Cloud Run service name for the API
 WEB_SERVICE="mbta-weather-dashboard"    # Cloud Run service name for Streamlit
 
-API_DIR="./api"                         # folder holding the API Dockerfile
+API_DIR="./fastapi"                     # folder holding the API Dockerfile
 WEB_DIR="./streamlit"                   # folder holding the Streamlit Dockerfile
 
 API_PORT=8000                           # must match EXPOSE/CMD in api/Dockerfile
 WEB_PORT=8501                           # Streamlit default
 
-# The key goes to Secret Manager and is mounted at runtime, and .env is read by
-# gcloud at deploy time.
-#
-# .env is dotenv format (KEY=value) because python-dotenv reads it locally.
-# `gcloud --env-vars-file` wants YAML, so env_yaml() converts it at deploy time
-# rather than making anyone maintain two copies.
 ENV_FILE=".env"
-LOCAL_KEY_FILE="${LOCAL_KEY_FILE:-$HOME/.ssh/mbta-weather-delay-d8fdc30c97c0.json}"
+LOCAL_KEY_FILE= #absolute path to service account JSON key on local machine
 
-# The code reads GCP_SERVICE_ACCOUNT_KEY as a file path and mounts it.
-# station_data.upload_to_gcs() calls from_service_account_file() with no
-# fallback, so this mount is required, not optional.
 GCP_KEY_SECRET="mbta-weather-gcp-key"
 SECRET_MOUNT_PATH="/run/secrets/gcp_key"
 
@@ -109,11 +99,6 @@ unset _dir
 
 log() { printf '\n\033[1;32m==> %s\033[0m\n' "$*"; }
 
-# ─── .env (dotenv) -> YAML for --env-vars-file ───────────────────────────────
-# python-dotenv reads KEY=value; gcloud reads KEY: value. Convert on the fly.
-# Values are emitted quoted, so colons and spaces inside them are safe.
-# Built once here, not inside env_yaml(): callers use $(env_yaml), which runs
-# in a subshell, and an EXIT trap set there would delete the file on return.
 ENV_YAML=$(mktemp)
 trap 'rm -f "$ENV_YAML"' EXIT
 awk '
@@ -219,9 +204,6 @@ deploy_web() {
 deploy_scheduler() {
   local url; url="$(api_url)"
 
-  # gcloud reads stdin, so each call inside the loop gets </dev/null. Without
-  # it the first call swallows the rest of SCHEDULE_SPECS and only one job is
-  # created, silently.
   while IFS='|' read -r job_name endpoint cron body; do
     [ -z "${job_name// /}" ] && continue
 
@@ -243,8 +225,6 @@ deploy_scheduler() {
       --attempt-deadline=1800s \
       </dev/null
 
-    # Monthly and yearly jobs would otherwise not fire until long after the
-    # deadline, leaving empty prefixes in GCS and no execution history.
     log "Triggering '${job_name}' once so you can confirm it works"
     gcloud scheduler jobs run "$job_name" --location="$REGION" </dev/null
   done <<< "$SCHEDULE_SPECS"
