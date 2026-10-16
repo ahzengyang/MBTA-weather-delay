@@ -21,15 +21,16 @@ import pandas as pd
 
 
 # Object names inside the GCS bucket
-STATION_BLOB = "station_processed/station_data_file_final"
+STATION_BLOB = "station_processed/station_data_file"
 WEATHER_BLOB = "weather/processed/weather_hourly.parquet"
 RIDERSHIP_BLOB = "mbta_gse/processed/GSE_hourly_all.csv"
 DELAYS_PREFIX = "mbta_lamp/processed/mbta_station_hour_panel_"
 COMBINED_BLOB = "combined_data/combined_data.csv"
 
 # Matches e.g. mbta_station_hour_panel_2025-10-01_to_2025-10-07.csv
+# and single day panels like mbta_station_hour_panel_2025-10-01.csv
 _PANEL_RE = re.compile(
-    r"mbta_station_hour_panel_(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})\.csv$"
+    r"mbta_station_hour_panel_(\d{4}-\d{2}-\d{2})(?:_to_(\d{4}-\d{2}-\d{2}))?\.csv$"
 )
 
 #The ridership is in EST and the others are in UTC, so we need to manually set the time zone for ridership
@@ -259,7 +260,7 @@ def build_combined(
 def get_bucket():
     """Connect to the bucket using the IDs in user_definition.py."""
     from google.cloud import storage
-    from user_definition import project_id, bucket_name, service_account_file_path
+    from fastapi_functions.user_definition import project_id, bucket_name, service_account_file_path
 
     client = storage.Client.from_service_account_json(
         service_account_file_path, project=project_id
@@ -270,21 +271,22 @@ def get_bucket():
 def pick_latest_panel(blob_names):
     """
     From a list of object names, return the delays panel with the latest end
-    date. If two panels share the same end date, the one with the earlier start
-    date (i.e. covering more days) wins.
+    date. A single-day panel (no _to_) ends on its own date. If two panels share
+    the same end date, the one with the earlier start date (more days) wins.
     """
-    best_key, best_name = None, None
+    panels = []
     for name in blob_names:
         m = _PANEL_RE.search(name)
         if not m:
             continue
-        start, end = pd.Timestamp(m.group(1)), pd.Timestamp(m.group(2))
-        key = (end, -start.value)
-        if best_key is None or key > best_key:
-            best_key, best_name = key, name
-    if best_name is None:
+        start = pd.Timestamp(m.group(1))
+        end = pd.Timestamp(m.group(2) or m.group(1))
+        panels.append((end, start, name))
+    if not panels:
         raise FileNotFoundError(f"No files matching {_PANEL_RE.pattern} under {DELAYS_PREFIX}")
-    return best_name
+    # Latest end date first; on a tie, earliest start date first
+    panels.sort(key=lambda p: (-p[0].value, p[1].value))
+    return panels[0][2]
 
 
 def resolve_blob_name(bucket, name):
@@ -313,14 +315,16 @@ def read_blob(bucket, name, **read_kwargs):
     return pd.read_csv(io.BytesIO(data), **read_kwargs)
 
 
-def load_sources_from_gcs(bucket=None):
+def load_sources_from_gcs(bucket=None, station_blob = STATION_BLOB, sources = None):
     bucket = bucket or get_bucket()
 
-    station_name = resolve_blob_name(bucket, STATION_BLOB)
+    station_name = resolve_blob_name(bucket, station_blob)
     delays_name = pick_latest_panel(b.name for b in bucket.list_blobs(prefix=DELAYS_PREFIX))
 
     def load(label, name, **kwargs):
         df = read_blob(bucket, name, **kwargs)
+        if sources is not None:
+            sources[label] = name
         print(f"  {label:<10} gs://{bucket.name}/{name}  ({len(df):,} rows)")
         return df
 

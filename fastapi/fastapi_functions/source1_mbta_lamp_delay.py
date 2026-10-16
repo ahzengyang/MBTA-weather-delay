@@ -18,7 +18,7 @@ from google.api_core.exceptions import GoogleAPIError
 from google.cloud import storage
 from google.cloud.storage.retry import DEFAULT_RETRY
 
-from user_definition import bucket_name, project_id, service_account_file_path
+from .user_definition import bucket_name, project_id, service_account_file_path
 
 
 # ------------------------- Configuration
