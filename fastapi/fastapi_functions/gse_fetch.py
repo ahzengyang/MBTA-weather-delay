@@ -12,6 +12,8 @@ station_name, route_or_line, gated_entries, ObjectId
 Converted time to EST zone, accounting for daylight savings in november.
 """
 
+import time
+
 import pandas as pd
 import requests
 
@@ -44,12 +46,42 @@ def _to_local_date(utc):
     return utc.dt.tz_convert(TZ).dt.tz_localize(None).dt.normalize()
 
 
+MAX_ATTEMPTS = 4
+
+
+def _get_json(params, timeout=60, what="request"):
+    last = None
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        try:
+            r = requests.get(GSE_URL, headers=HEADERS, timeout=timeout,
+                             params=params)
+            r.raise_for_status()
+            data = r.json()
+            if "error" in data:
+                raise RuntimeError(f"{what}: ArcGIS error {data['error']}")
+            return data
+        except (requests.Timeout, requests.ConnectionError,
+                requests.HTTPError, ValueError, RuntimeError) as exc:
+            last = exc
+            if attempt == MAX_ATTEMPTS:
+                break
+            wait = 2 ** attempt
+            print(f"{what}: {type(exc).__name__} on attempt "
+                  f"{attempt}/{MAX_ATTEMPTS}, retrying in {wait}s")
+            time.sleep(wait)
+    raise RuntimeError(f"{what}: gave up after {MAX_ATTEMPTS} attempts") from last
+
+
 def _api_edge_date(order):
-    r = requests.get(GSE_URL, headers=HEADERS, timeout=60, params={
-        "f": "json", "where": "1=1", "outFields": "service_date",
-        "orderByFields": f"service_date {order}", "resultRecordCount": 1})
-    r.raise_for_status()
-    ms = r.json()["features"][0]["attributes"]["service_date"]
+    data = _get_json({"f": "json", "where": "1=1", "outFields": "service_date",
+                      "orderByFields": f"service_date {order}",
+                      "resultRecordCount": 1},
+                     what=f"edge date ({order})")
+    features = data.get("features")
+    if not features:
+        raise RuntimeError(f"edge date ({order}): no rows returned; "
+                           f"response keys were {sorted(data)}")
+    ms = features[0]["attributes"]["service_date"]
     return _to_local_date(pd.to_datetime(pd.Series([ms]), unit="ms", utc=True))[0]
 
 
@@ -59,14 +91,11 @@ def _fetch_one_date(d):
     where = f"service_date >= TIMESTAMP '{lo} 00:00:00' AND service_date < TIMESTAMP '{hi} 00:00:00'"
     rows = []
     while True:
-        r = requests.get(GSE_URL, headers=HEADERS, timeout=120, params={
-            "f": "json", "where": where, "outFields": ",".join(FIELDS),
-            "orderByFields": "ObjectId", "resultOffset": len(rows),
-            "resultRecordCount": PAGE, "returnGeometry": "false"})
-        r.raise_for_status()
-        data = r.json()
-        if "error" in data:
-            raise RuntimeError(f"{lo}: {data['error']}")
+        data = _get_json({"f": "json", "where": where,
+                          "outFields": ",".join(FIELDS),
+                          "orderByFields": "ObjectId", "resultOffset": len(rows),
+                          "resultRecordCount": PAGE, "returnGeometry": "false"},
+                         timeout=120, what=lo)
         features = data.get("features", [])
         rows += [f["attributes"] for f in features]
         if not features or not data.get("exceededTransferLimit"):
