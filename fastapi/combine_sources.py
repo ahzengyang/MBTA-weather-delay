@@ -22,9 +22,6 @@ import pandas as pd
 # Object names inside the GCS bucket
 STATION_BLOB = "station_processed/station_data_file"
 WEATHER_BLOB = "weather/processed/weather_hourly.parquet"
-# /weather/daily writes one parquet per day here. Both are read and
-# concatenated; prep_weather() deduplicates on (location, hour) keeping the
-# newest ingested_at_utc, so overlap between the two is handled.
 WEATHER_DAILY_PREFIX = "weather/processed/daily/"
 RIDERSHIP_BLOB = "mbta_gse/processed/GSE_hourly_all.csv"
 DELAYS_PREFIX = "mbta_lamp/processed/mbta_station_hour_panel_"
@@ -67,13 +64,11 @@ def to_utc_hour(series: pd.Series, naive_tz: str = "UTC") -> pd.Series:
                 naive.dt.tz_localize(naive_tz, ambiguous="NaT", nonexistent="shift_forward")
                 .dt.tz_convert("UTC")
             )
-    # Same dtype/unit on both sides for every merge
     return dt.dt.floor("h").astype("datetime64[ns, UTC]")
 
 
 def clean_id(series: pd.Series) -> pd.Series:
     s = series.astype("string").str.strip()
-    # "123.0" -> "123" in case a numeric id was read as float somewhere
     return s.str.replace(r"^(\d+)\.0$", r"\1", regex=True)
 
 
@@ -84,10 +79,9 @@ def nearest_points(
     ref_lat: np.ndarray,
     ref_lon: np.ndarray,
 ):
-    """
-    For each query point, return (index of nearest reference point, distance km) using the haversine difference.
-    We can just brute force over all pairs since theres a couple hundred station and weather locations
-    """
+    #For each query point, return (index of nearest reference point, distance km) using the haversine difference.
+    #We can just brute force over all pairs since theres a couple hundred station and weather locations
+
     qlat = np.radians(query_lat)[:, None]
     qlon = np.radians(query_lon)[:, None]
     rlat = np.radians(ref_lat)[None, :]
@@ -99,6 +93,7 @@ def nearest_points(
     )
     # 6371.0088 km = mean radius of the Earth
     dist = 2 * 6371.0088 * np.arcsin(np.sqrt(np.clip(a, 0, 1)))
+
 
     idx = dist.argmin(axis=1)
     return idx, dist[np.arange(len(idx)), idx]
@@ -115,10 +110,7 @@ def prep_delays(delays: pd.DataFrame) -> pd.DataFrame:
 def prep_stations(station_data: pd.DataFrame) -> pd.DataFrame:
     s = station_data.copy()
     s["stop_id"] = clean_id(s["stop_id"])
-    # stop_id should be unique in GTFS, but guarantee it so the join can't add rows
     s = s.drop_duplicates(subset="stop_id", keep="first")
-    # Prefix every column so nothing collides with delays (both have a
-    # `parent_station` column, for example)
     s = s.add_prefix("station_").rename(columns={"station_stop_id": "_station_key"})
     return s
 
@@ -128,8 +120,6 @@ def prep_ridership(ridership: pd.DataFrame, naive_tz: str) -> pd.DataFrame:
     r["_station_key"] = clean_id(r["stop_id"])
     r["_hour_utc"] = to_utc_hour(r["datetime"], naive_tz=naive_tz)
 
-    # If a station has more than one row in the same hour, collapse them so the
-    # join stays one-to-one: add up the entries, keep the descriptive fields.
     agg = {"hourly_entries": "sum"}
     for col, how in [("day_type", "first"), ("event_day", "max"),
                      ("station_name", "first"), ("lines", "first")]:
@@ -146,16 +136,14 @@ def prep_ridership(ridership: pd.DataFrame, naive_tz: str) -> pd.DataFrame:
 
 
 def prep_weather(weather_hourly: pd.DataFrame):
-    """
-    Returns
-      points: one row per distinct weather location (lat/lon), with an id
-      hourly: weather readings keyed by (_weather_point_id, _hour_utc)
-    """
+
+
+    #points: one row per distinct weather location (lat/lon), with an id
+    #hourly: weather readings (_weather_point_id, _hour_utc)
+
     w = weather_hourly.copy()
     w["_hour_utc"] = to_utc_hour(w["observed_at_utc"])
 
-    # A weather location is identified by its coordinates. Round slightly so
-    # float noise doesn't split one location into several.
     w["_lat_key"] = w["latitude"].round(5)
     w["_lon_key"] = w["longitude"].round(5)
 
@@ -253,16 +241,14 @@ def build_combined(
     if unmatched:
         print(f"  {len(unmatched)} delay stations not in station_data, e.g. {unmatched[:5]}")
     if out["hourly_entries"].isna().mean() > 0.5:
-        print("  NOTE: under half the rows matched ridership. Check that "
-              "ridership.stop_id uses the same IDs as delays.parent_station, "
-              "and that RIDERSHIP_NAIVE_TZ matches ridership.datetime.")
+        print("Daniel Ridership Flag")
 
     return out
 
 
 #Load from GCS
 def get_bucket():
-    """Connect to the bucket using the IDs in user_definition.py."""
+    #Connect to the bucket using the IDs in user_definition.py.
     from google.cloud import storage
     from fastapi_functions.user_definition import project_id, bucket_name, service_account_file_path
 
@@ -273,12 +259,6 @@ def get_bucket():
 
 
 def all_panels(blob_names):
-    """Every delays panel, oldest end date first.
-
-    The daily scheduler job uploads a short rolling panel while the backfill
-    uploads a long one. Taking only the most recent end date would throw away
-    the history, so every panel is read and concatenated instead.
-    """
     panels = []
     for name in blob_names:
         m = _PANEL_RE.search(name)
@@ -293,11 +273,6 @@ def all_panels(blob_names):
 
 
 def pick_latest_panel(blob_names):
-    """
-    From a list of object names, return the delays panel with the latest end
-    date. A single-day panel (no _to_) ends on its own date. If two panels share
-    the same end date, the one with the earlier start date (more days) wins.
-    """
     panels = []
     for name in blob_names:
         m = _PANEL_RE.search(name)
@@ -314,10 +289,6 @@ def pick_latest_panel(blob_names):
 
 
 def resolve_blob_name(bucket, name):
-    """
-    Return `name` if that object exists. Otherwise look for a single object that
-    starts with it, e.g. 'station_data_file_final' -> 'station_data_file_final.csv'.
-    """
     if bucket.blob(name).exists():
         return name
     candidates = [b.name for b in bucket.list_blobs(prefix=name) if not b.name.endswith("/")]
@@ -332,7 +303,6 @@ def resolve_blob_name(bucket, name):
 
 
 def read_blob(bucket, name, **read_kwargs):
-    """Download one object and read it as parquet or CSV based on its extension."""
     data = bucket.blob(name).download_as_bytes()
     if name.endswith(".parquet"):
         return pd.read_parquet(io.BytesIO(data))
@@ -356,11 +326,6 @@ def load_sources_from_gcs(bucket=None, station_blob = STATION_BLOB, sources = No
         return df
 
     def load_many(label, names, dedupe_on, **kwargs):
-        """Concatenate several objects, newest-wins on dedupe_on.
-
-        `names` must be oldest first; a missing object is skipped rather than
-        fatal, so a daily partition deleted by hand does not break the run.
-        """
         frames = []
         for name in names:
             try:
@@ -382,7 +347,6 @@ def load_sources_from_gcs(bucket=None, station_blob = STATION_BLOB, sources = No
     print("Loaded files from GCS:")
     station_data = load("station", station_name, low_memory=False,
                         dtype={"stop_id": str, "parent_station": str})
-    # Canonical first, daily partitions after, so a later run wins on dedupe.
     weather_hourly = load_many("weather", weather_names, dedupe_on=None)
     ridership = load("ridership", RIDERSHIP_BLOB, dtype={"stop_id": str})
     # Panels overlap; the one with the later end date was computed later.
@@ -393,17 +357,11 @@ def load_sources_from_gcs(bucket=None, station_blob = STATION_BLOB, sources = No
 
 
 def upload_csv(bucket, df, name=COMBINED_BLOB):
-    """Write a dataframe to the bucket as CSV, replacing any existing file."""
     bucket.blob(name).upload_from_string(df.to_csv(index=False), content_type="text/csv")
     print(f"Uploaded {len(df):,} rows to gs://{bucket.name}/{name}")
 
 
 def upload_parquet(bucket, df, name=COMBINED_PARQUET_BLOB):
-    """Write the same dataframe as parquet, replacing any existing file.
-
-    Roughly a tenth the size of the CSV and keeps its dtypes, so the dashboard
-    loads it without re-inferring types or holding the decoded text in memory.
-    """
     buffer = io.BytesIO()
     df.to_parquet(buffer, index=False)
     bucket.blob(name).upload_from_string(
