@@ -84,7 +84,7 @@ cp .env_template .env
 To start the API server,
 
 ```python
-fastapi dev mbta_lamp_api.py
+fastapi dev mbta_weather_api.py
 ```
 
 Example post:
