@@ -1,11 +1,4 @@
-"""A combined file for all four of the team's API data sources endpoints (station_api.py, mbta_lamp_api.py, 
-fastapi_weather.py, and api.py in MBTA delay data
 
-To run, use command: fastapi run mbta_weather_api.py
-
-Make sure to have the following files ready: user_definition.py, station_data.py, source1_mbta_lamp_delay.py, weather_openmeteo.py, run_pipeline.py, 
-gcs.py, gse_fetch.py, gse_clean.py, stations.py
-"""
 from __future__ import annotations
 
 import json
@@ -50,6 +43,9 @@ app = FastAPI(
 
 @app.get("/health")
 def health() -> dict:
+    """
+    Returns status of the API and the four sources
+    """
     return {"status": "ok",
             "sources": ["stations", "delays", "weather", "ridership"]}
 
@@ -66,8 +62,11 @@ def build_station_table():
 
 @app.get("/stations")
 def get_stations(
-    fmt: Annotated[Literal["json", "csv"], Query(alias="format", description="json or csv")] = "json",
+    fmt: Annotated[Literal["json", "csv"], Query(alias="format", description="json or csv")] = "json", #allows the output to be ether a CSV or JSON
 ):
+    """
+    Gets a list of MBTA stations. By defaults returns JSON but can be set to return CSV
+    """
     try:
         station_df = build_station_table()
     except Exception as exc:
@@ -91,6 +90,9 @@ def upload_stations(
     blob_path: Annotated[str, Query(description="Destination path inside the bucket")]
     = f"{station_gcs_prefix}/{station_data_file_name}",
 ) -> dict:
+    """
+    Post stations to GCP bucket
+    """
     try:
         station_df = build_station_table()
     except Exception as exc:
@@ -115,13 +117,13 @@ def upload_stations(
 
 
 def _complete_cutoff() -> date:
-    """Dates after this may still be growing on LAMP's side."""
+    #dates after this could be growing on LAMPs side
     return datetime.now(ZoneInfo(lamp.LOCAL_TZ)).date() - timedelta(days=MIN_AGE_DAYS)
 
 
 @lru_cache(maxsize=CACHE_DAYS)
 def _cached_day(d: date) -> pd.DataFrame:
-    """Processed day, cached. Only complete days are routed here; failures aren't cached."""
+    #caches a proccessed day
     return lamp.process_day(d, lamp._session())
 
 
@@ -136,7 +138,7 @@ def _validate_range(start_date: date, end_date: date) -> list[date]:
 
 
 def build_panel(start_date: date, end_date: date) -> dict:
-    """Same steps as the script's collect() + station_hour_panel(), with per-day caching."""
+    #Does collect() and station_hour_panel() with caching per-day
     days = _validate_range(start_date, end_date)
     cutoff = _complete_cutoff()
     sess = lamp._session()
@@ -150,11 +152,11 @@ def build_panel(start_date: date, end_date: date) -> dict:
         try:
             day_frame = _cached_day(d) if d <= cutoff else lamp.process_day(d, sess)
         except (FileNotFoundError, requests.RequestException) as exc:
-            print(f"  skipped: {exc}")
+            print(f" skipped: {exc}")
             skipped.append({"date": d.isoformat(), "reason": str(exc)})
             continue
         except Exception as exc:
-            print(f"  skipped: could not process {d}: {type(exc).__name__}: {exc}")
+            print(f" skipped: could not process {d}: {type(exc).__name__}: {exc}")
             skipped.append({"date": d.isoformat(),
                             "reason": f"could not process: {type(exc).__name__}: {exc}"})
             continue
@@ -162,8 +164,7 @@ def build_panel(start_date: date, end_date: date) -> dict:
         loaded.append(d.isoformat())
 
     if not frames:
-        raise HTTPException(404, {"message": "No data could be loaded for any date in the range.",
-                                  "dates_skipped": skipped})
+        raise HTTPException(404, {"message": "No data could be loaded for any date in the range.","dates_skipped": skipped})
 
     panel = lamp.station_hour_panel(pd.concat(frames, ignore_index=True))
 
@@ -189,8 +190,6 @@ def build_panel(start_date: date, end_date: date) -> dict:
 
 
 def _panel_records(panel: pd.DataFrame) -> list[dict]:
-    """Rows as JSON records. Timestamps are written exactly as in the CSV
-    (e.g. '2025-03-08 05:00:00-05:00'); NaN becomes null."""
     out = panel.copy()
     for col in ("hour_local", "hour_utc"):
         out[col] = out[col].astype(str)
@@ -219,14 +218,10 @@ def published_dates() -> dict:
 def get_panel(
     start_date: StartDate,
     end_date: EndDate,
-    fmt: Annotated[Literal["json", "csv"], Query(alias="format", description="json or csv")] = "json",
+    fmt: Annotated[Literal["json", "csv"], Query(alias="format", description="json or csv")] = "json", #optional CSV
 ):
     """
-    Station x local-hour delay panel for an inclusive date range.
-
-    JSON: a summary (dates loaded/skipped, counts) plus `data`, one record per
-    (parent_station, hour_local). CSV: the same file the script uploads, with
-    the loaded/skipped dates in X-Dates-* headers.
+    Gets the delay panel per station per hour. Dates are inclusive
     """
     result = build_panel(start_date, end_date)
     panel, summary = result["panel"], result["summary"]
@@ -244,6 +239,7 @@ def get_panel(
     return {**summary, "columns": list(panel.columns), "data": _panel_records(panel)}
 
 
+#Add info about parameters to documentation
 OptionalStartDate = Annotated[date | None,
                               Query(description="First service date (inclusive), YYYY-MM-DD. "
                                                 "Defaults to PANEL_WINDOW_DAYS before end_date.",
@@ -256,16 +252,6 @@ OptionalEndDate = Annotated[date | None,
 
 def _default_panel_range(start_date: date | None,
                          end_date: date | None) -> tuple[date, date]:
-    """Fill in a date range for an unparameterised scheduled run.
-
-    Cloud Scheduler sends a fixed URI, so a job with hardcoded dates would
-    re-upload the same window forever. Defaulting end_date to the latest
-    complete service date makes the daily job pick up new data on its own.
-
-    The window is deliberately short: _cached_day holds CACHE_DAYS days, so
-    rebuilding a year every morning would re-fetch almost all of it from LAMP.
-    Panels accumulate in GCS instead and combine_sources reads them all.
-    """
     if end_date is None:
         cutoff = _complete_cutoff()
         try:
@@ -284,11 +270,8 @@ def upload_panel(
     end_date: OptionalEndDate = None,
     prefix: Annotated[str, Query(description="Folder inside the bucket")] = lamp.DEFAULT_PREFIX,
 ) -> dict:
-    """Build the panel and upload it to GCS at PREFIX/processed/<filename>, as the script does.
-
-    With no dates, uploads the last PANEL_WINDOW_DAYS complete service dates --
-    this is what the daily Cloud Scheduler job calls. Pass explicit dates for a
-    backfill.
+    """
+    Builds the delay panel and uploads to GCP at /delays/processed/<filename>
     """
     start_date, end_date = _default_panel_range(start_date, end_date)
     try:
@@ -307,8 +290,6 @@ def upload_panel(
 
 
 def load_stations() -> pd.DataFrame:
-    """Station table uploaded by POST /stations/upload, with the column names
-    the weather endpoints use."""
     try:
         stations = gcs.read_csv(station_data_file_name, parse_dates=None,
                                 prefix=station_gcs_prefix)
@@ -324,6 +305,9 @@ def load_stations() -> pd.DataFrame:
 def get_weather(station: str,
                 start: str = start_date,
                 end: str = end_date):
+    """
+    Gets weather for station, start, and end date
+    """
     stations = load_stations()
     matched = stations[stations["station_name"].str.lower() ==
                        station.lower()]
@@ -360,7 +344,7 @@ def get_weather(station: str,
             "stored": stored,
             "message": "Successfully stored the extracted data"}
 
-
+#Validation and standardize date
 def _day(date):
     try:
         return pd.Timestamp(date).normalize()
@@ -386,8 +370,6 @@ def _filter(df, station, line, line_col):
 
 
 def daily_frame(target: str) -> pd.DataFrame:
-    """Every station for one service date. Each station's raw response is
-    uploaded to GCS by fetch_weather()."""
     stations = load_stations()
     frames = []
     for station in stations.itertuples(index=False):
@@ -403,7 +385,9 @@ def daily_frame(target: str) -> pd.DataFrame:
 
 @app.post("/weather/refresh")
 def refresh_weather(start: str, end: str | None = None):
-    #Hourly weather for every station from the START to END (END by default is today)
+    """
+    Posts Hourly weather for every station from the START to END (END by default is today)
+    """
     today = datetime.now(ZoneInfo(local_timezone)).date()
     try:
         start_day = date.fromisoformat(start)
@@ -455,7 +439,9 @@ def refresh_weather(start: str, end: str | None = None):
 
 @app.post("/weather/daily")
 def collect_daily(day: str | None = None):
-    """Collect one day for every station and write it straight to GCS."""
+    """
+    Collect one day for every station and write it straight to GCS.
+    """
     target = day or (datetime.now(timezone.utc).date()
                      - timedelta(days=1)).isoformat()
     try:
@@ -481,7 +467,9 @@ def collect_daily(day: str | None = None):
 
 @app.post("/ridership/refresh")
 def refresh(start: str | None = None, end: str | None = None):
-    """Re-run the pipeline (default: the last 365 published days) and upload to GCS."""
+    """
+    Re-run the pipeline (default is the last 365 days) and upload to GCS.
+    """
     try:
         res = run(start, end)
     except ValueError as e:
@@ -507,7 +495,7 @@ def hourly_all(date: str | None = None, station: str | None = None, line: str | 
 
 @app.get("/ridership/raw")
 def raw(date: str, station: str | None = None, line: str | None = None):
-    """Raw ArcGIS rows for one service date (3am to 3am), all stations, 30 minute periods."""
+    """Raw ridership rows for one service date (3am to 3am) for all stations in 30 min period"""
     day = _day(date)
     df = _read(raw_file(day.strftime("%Y-%m")), "service_date", gcs.RAW_PREFIX)
     df = _filter(df[df["service_date"] == day], station, line, "route_or_line")
