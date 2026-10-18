@@ -547,6 +547,8 @@ def refresh_combined(
 
     try:
         combine.upload_csv(bucket, combined, output_blob)
+        combine.upload_parquet(bucket, combined,
+                               output_blob.rsplit(".", 1)[0] + ".parquet")
     except GoogleAPIError as exc:
         raise HTTPException(502, f"Upload to gs://{bucket.name}/{output_blob} failed: {exc}")
 

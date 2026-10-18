@@ -189,8 +189,11 @@ deploy_web() {
     --port="$WEB_PORT" \
     --allow-unauthenticated \
     --max-instances=1 \
+    --min-instances=1 \
     --session-affinity \
-    --memory=2Gi \
+    --memory=8Gi \
+    --cpu=2 \
+    --timeout=600 \
     --env-vars-file="$(env_yaml)" \
     --set-secrets="$SECRET_MOUNT_PATH=$GCP_KEY_SECRET:latest"
 
