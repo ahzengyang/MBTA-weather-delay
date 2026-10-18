@@ -56,7 +56,7 @@ Join keys: parent_station, utc_hour
 ### Prerequisites
 
 - Python 3.11+, Docker Desktop, `gcloud` CLI
-- A GCP service account key with access to mbta-weather-delay/mbta-weather-delay/mbta_lamp/processed/
+- A GCP service account key with access to GCP bucket: mbta-weather-delay/mbta-weather-delay
 
 ### 1. Clone the repository
 
