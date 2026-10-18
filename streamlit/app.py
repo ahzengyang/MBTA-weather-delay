@@ -45,10 +45,18 @@ def load_mbta_data(
     service_account_file_path: str, project_id: str, bucket_name: str, blob_path: str
 ) -> pd.DataFrame:
     client = get_gcs_client(service_account_file_path, project_id)
-    blob = client.bucket(bucket_name).blob(blob_path)
-    file_bytes = blob.download_as_bytes()
+    bucket = client.bucket(bucket_name)
+
+    parquet_path = blob_path.rsplit(".", 1)[0] + ".parquet"
+    blob = bucket.blob(parquet_path)
+    if blob.exists():
+        file_bytes = blob.download_as_bytes()
+        print(f"Successfully acquired data from gcs://{bucket_name}/{parquet_path}")
+        return pd.read_parquet(io.BytesIO(file_bytes))
+
+    file_bytes = bucket.blob(blob_path).download_as_bytes()
     print(f"Successfully acquired data from gcs://{bucket_name}/{blob_path}")
-    return pd.read_csv(io.BytesIO(file_bytes))
+    return pd.read_csv(io.BytesIO(file_bytes), low_memory=False)
 
 
 MTBS_data = load_mbta_data(

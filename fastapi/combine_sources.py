@@ -29,6 +29,7 @@ WEATHER_DAILY_PREFIX = "weather/processed/daily/"
 RIDERSHIP_BLOB = "mbta_gse/processed/GSE_hourly_all.csv"
 DELAYS_PREFIX = "mbta_lamp/processed/mbta_station_hour_panel_"
 COMBINED_BLOB = "combined_data/combined_data.csv"
+COMBINED_PARQUET_BLOB = "combined_data/combined_data.parquet"
 
 # Matches e.g. mbta_station_hour_panel_2025-10-01_to_2025-10-07.csv
 # and single day panels like mbta_station_hour_panel_2025-10-01.csv
@@ -397,8 +398,23 @@ def upload_csv(bucket, df, name=COMBINED_BLOB):
     print(f"Uploaded {len(df):,} rows to gs://{bucket.name}/{name}")
 
 
+def upload_parquet(bucket, df, name=COMBINED_PARQUET_BLOB):
+    """Write the same dataframe as parquet, replacing any existing file.
+
+    Roughly a tenth the size of the CSV and keeps its dtypes, so the dashboard
+    loads it without re-inferring types or holding the decoded text in memory.
+    """
+    buffer = io.BytesIO()
+    df.to_parquet(buffer, index=False)
+    bucket.blob(name).upload_from_string(
+        buffer.getvalue(), content_type="application/vnd.apache.parquet")
+    print(f"Uploaded {len(df):,} rows to gs://{bucket.name}/{name} "
+          f"({buffer.getbuffer().nbytes / 1e6:,.0f} MB)")
+
+
 if __name__ == "__main__":
     bucket = get_bucket()
     combined = build_combined(*load_sources_from_gcs(bucket))
     print(combined.head())
     upload_csv(bucket, combined)
+    upload_parquet(bucket, combined)
