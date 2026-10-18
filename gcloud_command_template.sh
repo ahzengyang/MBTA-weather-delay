@@ -213,6 +213,11 @@ deploy_scheduler() {
       action=update
     fi
 
+    local header_flag="--headers=Content-Type=application/json"
+    if [ "$action" = update ]; then
+      header_flag="--update-headers=Content-Type=application/json"
+    fi
+
     log "Running '${action}' on scheduler job '${job_name}' (${cron} ${SCHEDULER_TZ})"
     gcloud scheduler jobs "$action" http "$job_name" \
       --location="$REGION" \
@@ -220,7 +225,7 @@ deploy_scheduler() {
       --time-zone="$SCHEDULER_TZ" \
       --uri="${url}${endpoint}" \
       --http-method=POST \
-      --headers="Content-Type=application/json" \
+      "$header_flag" \
       --message-body="$body" \
       --attempt-deadline=1800s \
       </dev/null
